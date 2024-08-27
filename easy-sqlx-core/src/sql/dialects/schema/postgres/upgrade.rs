@@ -1,6 +1,6 @@
-pub const TABLE_NAME: &str = "__rpa_upgrade";
+pub const TABLE_NAME: &str = "__easy_upgrade";
 pub const TABLE_DDL: &str = r#"
- CREATE TABLE public.__rpa_upgrade
+ CREATE TABLE public.__easy_upgrade
     (
         id BIGSERIAL,
         table_name character varying(255),
@@ -12,7 +12,7 @@ pub const TABLE_DDL: &str = r#"
 "#;
 
 pub const TABLE_INSERT: &str = r#"
- insert into public.__rpa_upgrade
+ insert into public.__easy_upgrade
     (
         table_name,
         up_tag,
@@ -31,7 +31,7 @@ pub const TABLE_QUERY: &str = r#"
         up_tag,
         up_value,
         create_time 
-    from public.__rpa_upgrade
+    from public.__easy_upgrade
     where table_name = $1 and up_tag = $2
     order by id desc
 "#;
