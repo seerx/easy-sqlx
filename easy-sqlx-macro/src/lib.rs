@@ -61,7 +61,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                         );
                         // 添加列方法
                         col_prop_methods.push(quote! {
-                            fn #fn_name() -> &'static str {
+                            pub fn #fn_name() -> &'static str {
                                 "123"
                             }
                         });
@@ -112,7 +112,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             //     }
             // }
             // #(#table_prop_methods) *
-            fn table() -> easy_sqlx_core::sql::schema::table::TableSchema {
+            pub fn table() -> easy_sqlx_core::sql::schema::table::TableSchema {
                 #table
             }
 
