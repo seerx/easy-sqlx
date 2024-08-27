@@ -8,6 +8,8 @@ mod attrs;
 use attrs::{column::parse_column_attrs, table::parse_table_attrs};
 
 /// 使用示例
+/// 定义表结构
+/// ```rust,ignore
 ///     #[derive(Table)]
 ///     #[table(
 ///         indexes [
@@ -15,16 +17,22 @@ use attrs::{column::parse_column_attrs, table::parse_table_attrs};
 ///         ]
 ///     )]
 ///     #[index(columns("ooi"))]
-///     struct AbcOk {
+///     struct Table1 {
 ///         // #[col(column = "key", ignore, col_type = "abc", )]
 ///         #[col(column = "key", comment = "123")]
-///         #[col(column = "key", comment = "123", pk, autoincr, len = 100)]
+///         #[col(pk, autoincr, len = 100)]
 ///         pub id: String,
-///         #[col(comment = "id_use", col_type = "varchar(1)")]
-///         pub id_use: Option<i32>,
+///         #[col(comment = "姓名", len = 20)]
+///         pub name: Option<String>,
 ///         #[col(ignore)]
-///         pub t: chrono::NaiveTime,
+///         pub t_o: chrono::NaiveTime,
 ///     }
+/// ```
+/// 同步表结构
+/// 参数 connection 为数据库连接
+/// ```rust,ignore
+///  sync_tables(connection, vec![Table1::table()], None).await?;
+/// ```
 #[proc_macro_derive(Table, attributes(table, index, col))]
 pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = parse_macro_input!(input);
