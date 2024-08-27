@@ -34,8 +34,7 @@ struct Table1 {
     pub t_o: chrono::NaiveTime,
 }
 ```
-// 同步表结构
-// 参数 connection 为数据库连接
+同步表结构，参数 connection 为数据库连接
 ```
 sync_tables(connection, vec![Table1::table()], None).await?;
 ```
