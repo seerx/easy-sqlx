@@ -21,7 +21,7 @@ pub const TABLE_INSERT: &str = r#"
     )
     values 
     (
-        $1, $2, $3, $4, $5
+        $1, $2, $3, $4
     )
 "#;
 
