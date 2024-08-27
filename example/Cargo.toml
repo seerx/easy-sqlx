@@ -1,0 +1,10 @@
+[package]
+name = "example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+easy-sqlx-core = { path = "../easy-sqlx-core", features = ["postgres"] }
+# easy-sqlx-macro = { path = "../easy-sqlx-macro" }
+easy-sqlx = { path="../" }
+chrono.workspace = true

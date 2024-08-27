@@ -1,0 +1,55 @@
+[package]
+name = "easy-sqlx"
+version = "0.1.0"
+description = "The Rust Toolkit to easy use sqlx"
+readme = "Readme.md"
+authors = ["he <79628868@qq.com>"]
+edition = "2021"
+license = "Apache-2.0"
+categories = ["database"]
+keywords = ["database", "orm", "sqlx"]
+documentation = ""
+repository = "https://gitee.com/knowgo/easy-sqlx"
+homepage = ""
+
+[workspace]
+members = ["easy-sqlx-core", "easy-sqlx-macro", "easy-sqlx-utils", "example"]
+# members = ["easy-sqlx-core", "easy-sqlx-macro", "easy-sqlx-utils", "example"]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.80.1"
+
+[features]
+default = ["postgres", "chrono"]
+postgres = []
+chrono = []
+
+[workspace.dependencies]
+pilota = "*"
+
+regex = "1"
+chrono = { version = "0.4", features = ["serde"] }
+heck = { version = "^0.5" }
+
+# 宏编程相关
+syn = "^2.0"
+quote = "1.0"
+proc-macro2 = "^1"
+
+sqlx = { version = "^0", features = [
+    "runtime-async-std",
+    "tls-native-tls",
+    "postgres",
+    "macros",
+    "chrono",
+] }
+sqlx-core = { version = "0" }
+# sqlx-postgres = { version = "0" }
+
+tracing = { version = "0.1.40" }
+tracing-subscriber = { version = "0.3.18" } # , features = ["env-filter"] }
+
+[dependencies]
+easy-sqlx-core = { path = "./easy-sqlx-core" }
+easy-sqlx-macro = { path = "./easy-sqlx-macro" }

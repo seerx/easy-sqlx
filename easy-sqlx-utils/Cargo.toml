@@ -1,0 +1,10 @@
+[package]
+name = "easy-sqlx-utils"
+version = "0.1.0"
+edition = "2021"
+rust-version.workspace = true
+
+[dependencies]
+syn.workspace = true
+quote.workspace = true
+proc-macro2.workspace = true

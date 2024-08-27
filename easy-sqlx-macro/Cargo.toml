@@ -1,0 +1,18 @@
+[package]
+name = "easy-sqlx-macro"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+easy-sqlx-utils = { path = "../easy-sqlx-utils" }
+easy-sqlx-core = { path = "../easy-sqlx-core", features = [
+    "postgres",
+    "chrono",
+] }
+syn = { workspace = true, features = ["full"] }
+quote.workspace = true
+proc-macro2.workspace = true
+heck.workspace = true
