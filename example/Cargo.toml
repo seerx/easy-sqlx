@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-easy-sqlx-core = { git = "https://gitee.com/knowgo/easy-sqlx.git", features = ["postgres"] } 
-easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
+# easy-sqlx-core = { git = "https://gitee.com/knowgo/easy-sqlx.git", features = ["postgres"] } 
+# easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
+easy-sqlx-core = { path = "../easy-sqlx-core", features = ["postgres"] } 
+easy-sqlx = { path = "../" }
 
 chrono.workspace = true

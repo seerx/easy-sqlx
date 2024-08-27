@@ -491,17 +491,8 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 name = "easy-sqlx"
 version = "0.1.0"
 dependencies = [
- "easy-sqlx-core 0.1.0",
- "easy-sqlx-macro 0.1.0",
-]
-
-[[package]]
-name = "easy-sqlx"
-version = "0.1.0"
-source = "git+https://gitee.com/knowgo/easy-sqlx.git#c128873729342da7ab5c2fdb9e4ea73c2962ba01"
-dependencies = [
- "easy-sqlx-core 0.1.0 (git+https://gitee.com/knowgo/easy-sqlx.git)",
- "easy-sqlx-macro 0.1.0 (git+https://gitee.com/knowgo/easy-sqlx.git)",
+ "easy-sqlx-core",
+ "easy-sqlx-macro",
 ]
 
 [[package]]
@@ -509,25 +500,7 @@ name = "easy-sqlx-core"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "easy-sqlx-utils 0.1.0",
- "pilota",
- "proc-macro2",
- "quote",
- "regex",
- "sqlx",
- "sqlx-core",
- "syn 2.0.76",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "easy-sqlx-core"
-version = "0.1.0"
-source = "git+https://gitee.com/knowgo/easy-sqlx.git#c128873729342da7ab5c2fdb9e4ea73c2962ba01"
-dependencies = [
- "chrono",
- "easy-sqlx-utils 0.1.0 (git+https://gitee.com/knowgo/easy-sqlx.git)",
+ "easy-sqlx-utils",
  "pilota",
  "proc-macro2",
  "quote",
@@ -543,21 +516,8 @@ dependencies = [
 name = "easy-sqlx-macro"
 version = "0.1.0"
 dependencies = [
- "easy-sqlx-core 0.1.0",
- "easy-sqlx-utils 0.1.0",
- "heck",
- "proc-macro2",
- "quote",
- "syn 2.0.76",
-]
-
-[[package]]
-name = "easy-sqlx-macro"
-version = "0.1.0"
-source = "git+https://gitee.com/knowgo/easy-sqlx.git#c128873729342da7ab5c2fdb9e4ea73c2962ba01"
-dependencies = [
- "easy-sqlx-core 0.1.0 (git+https://gitee.com/knowgo/easy-sqlx.git)",
- "easy-sqlx-utils 0.1.0 (git+https://gitee.com/knowgo/easy-sqlx.git)",
+ "easy-sqlx-core",
+ "easy-sqlx-utils",
  "heck",
  "proc-macro2",
  "quote",
@@ -567,16 +527,6 @@ dependencies = [
 [[package]]
 name = "easy-sqlx-utils"
 version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.76",
-]
-
-[[package]]
-name = "easy-sqlx-utils"
-version = "0.1.0"
-source = "git+https://gitee.com/knowgo/easy-sqlx.git#c128873729342da7ab5c2fdb9e4ea73c2962ba01"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -651,8 +601,8 @@ name = "example"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "easy-sqlx 0.1.0 (git+https://gitee.com/knowgo/easy-sqlx.git)",
- "easy-sqlx-core 0.1.0 (git+https://gitee.com/knowgo/easy-sqlx.git)",
+ "easy-sqlx",
+ "easy-sqlx-core",
 ]
 
 [[package]]

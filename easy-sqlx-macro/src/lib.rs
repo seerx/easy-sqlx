@@ -1,3 +1,5 @@
+use std::collections;
+
 use heck::ToSnakeCase;
 use proc_macro2::Span;
 use quote::quote;
@@ -59,10 +61,12 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                             format!("col_{}", &column.name).as_str(),
                             Span::call_site(),
                         );
+                        let col_name = column.get_column_name();
                         // 添加列方法
                         col_prop_methods.push(quote! {
+                            /// #col_name 列名称
                             pub fn #fn_name() -> &'static str {
-                                "123"
+                                #col_name
                             }
                         });
                         // 添加列
@@ -103,15 +107,17 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         panic!("{}", err);
     }
 
+    let table_name = table.name_with_schema();
+
     // 实现 comment 方法
     let output = quote! {
         impl #ident {
-            // fn comment(&self) -> &'static str {
-            //     match self {
-            //         #(#comment_arms),*
-            //     }
-            // }
-            // #(#table_prop_methods) *
+            /// 获取数据库表名称
+            pub fn table_name() -> &'static str {
+                #table_name
+            }
+            
+            /// 获取表结构定义
             pub fn table() -> easy_sqlx_core::sql::schema::table::TableSchema {
                 #table
             }

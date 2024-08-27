@@ -12,8 +12,16 @@ pub struct User {
     pub create_time: chrono::NaiveDateTime,
 }
 
+impl User {
+    pub fn id(&self) -> i64 {
+        self.id
+    }
+}
+
 fn main() {
     User::table();
+    println!("table name: {}", User::table_name());
+    User::col_create_time();
     // sync_tables(conn, tables, default_schema)
     println!("Hello, world!");
 }
