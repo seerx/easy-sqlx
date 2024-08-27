@@ -17,16 +17,21 @@ easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
 使用示例
 定义表结构 #[derive(Table)]
 ```
+#[derive(Table)]
 #[table(
-indexes [
-(name = "123", columns("a", "b"))
-]
-)] #[index(columns("ooi"))]
+    indexes [
+        (name = "123", columns("a", "b"))
+    ])
+] 
+#[index(columns("ooi"))]
 struct Table1 {
-// #[col(column = "key", ignore, col_type = "abc", )] #[col(column = "key", comment = "123")] #[col(pk, autoincr, len = 100)]
-pub id: String, #[col(comment = "姓名", len = 20)]
-pub name: Option<String>, #[col(ignore)]
-pub t_o: chrono::NaiveTime,
+    #[col(column = "key", comment = "123")]
+    #[col(pk, autoincr, len = 100)]
+    pub id: String,
+    #[col(comment = "姓名", len = 20)]
+    pub name: Option<String>,
+    #[col(ignore)]
+    pub t_o: chrono::NaiveTime,
 }
 ```
 // 同步表结构
