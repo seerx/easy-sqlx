@@ -21,9 +21,9 @@ easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
 #[table(
     indexes [
         (name = "123", columns("a", "b"))
-    ])
-] 
-#[index(columns("ooi"))]
+    ]
+)] 
+#[index(columns("name"))]
 struct Table1 {
     #[col(column = "key", comment = "123")]
     #[col(pk, autoincr, len = 100)]
