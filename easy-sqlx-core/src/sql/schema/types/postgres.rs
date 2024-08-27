@@ -21,114 +21,133 @@ lazy_static! {
             sql: sql_types::BOOLEAN,
             maybe_types: Some(vec![sql_types::BOOL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_U8,
             sql: super::sql_types::SMALL_INT,
             maybe_types: Some(vec![super::sql_types::SMALL_SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_I8,
             sql: super::sql_types::SMALL_INT,
             maybe_types: Some(vec![super::sql_types::SMALL_SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_CHAR,
             sql: super::sql_types::CHAR,
             maybe_types: Some(vec![super::sql_types::CHARACTER]),
             fix_len: Some(1),
+            default_len: None,
         },
         TypeRelation {
             rust: R_I16,
             sql: super::sql_types::SMALL_INT,
             maybe_types: Some(vec![super::sql_types::SMALL_SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_U16,
             sql: super::sql_types::SMALL_INT,
             maybe_types: Some(vec![super::sql_types::SMALL_SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_I32,
             sql: super::sql_types::INT,
             maybe_types: Some(vec![super::sql_types::INTEGER, super::sql_types::SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_U32,
             sql: super::sql_types::INT,
             maybe_types: Some(vec![super::sql_types::INTEGER, super::sql_types::SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_I64,
             sql: super::sql_types::BIG_INT,
             maybe_types: Some(vec![super::sql_types::BIG_SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_U64,
             sql: super::sql_types::BIG_INT,
             maybe_types: Some(vec![super::sql_types::BIG_SERIAL]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_F32,
             sql: super::sql_types::REAL,
             maybe_types: None,
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_F64,
             sql: super::sql_types::DOUBLE,
             maybe_types: Some(vec![super::sql_types::DOUBLE_PRECISION]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_STRING,
             sql: super::sql_types::VARCHAR,
             maybe_types: Some(vec![super::sql_types::CHARACTER_VARYING]),
             fix_len: None,
+            default_len: Some(255),
         },
         TypeRelation {
             rust: R_CHRONO_DATE,
             sql: super::sql_types::DATE,
             maybe_types: Some(vec![super::sql_types::TIMESTAMP_WITHOUT_TIME_ZONE]),
             fix_len: None,
+            default_len: None,
         },
         TypeRelation {
             rust: R_CHRONO_DATE_FULL,
             sql: super::sql_types::DATE,
             maybe_types: Some(vec![super::sql_types::TIMESTAMP_WITHOUT_TIME_ZONE]),
             fix_len: None,
+            default_len: Some(6),
         },
         TypeRelation {
             rust: R_CHRONO_DATETIME,
             sql: super::sql_types::TIME_STAMP,
             maybe_types: Some(vec![super::sql_types::TIME_STAMP]),
             fix_len: None,
+            default_len: Some(6),
         },
         TypeRelation {
             rust: R_CHRONO_DATETIME_FULL,
             sql: super::sql_types::TIME_STAMP,
             maybe_types: Some(vec![super::sql_types::TIME_STAMP]),
             fix_len: None,
+            default_len: Some(6),
         },
         TypeRelation {
             rust: R_CHRONO_TIME,
             sql: super::sql_types::TIME,
             maybe_types: Some(vec![super::sql_types::TIME_WITHOUT_TIME_ZONE]),
             fix_len: None,
+            default_len: Some(6),
         },
         TypeRelation {
             rust: R_CHRONO_TIME_FULL,
             sql: super::sql_types::TIME,
             maybe_types: Some(vec![super::sql_types::TIME_WITHOUT_TIME_ZONE]),
             fix_len: None,
+            default_len: Some(6),
         }
     ];
 }
@@ -185,7 +204,10 @@ pub fn convert_sql_type(col: &Column) -> String {
         }
         sql_types::FLOAT => sql_types::REAL.to_string(),
         sql_types::DOUBLE => sql_types::DOUBLE_PRECISION.to_string(),
-        sql_types::DATE_TIME => sql_types::TIME_STAMP.to_string(),
+        sql_types::DATE_TIME => {
+            sql_typ.to_string()
+            // if sql_typ. sql_types::TIME_STAMP.to_string();
+        }
         sql_types::TIME_STAMPZ => sql_types::TIMESTAMP_WITH_TIME_ZONE.to_string(),
         sql_types::TINY_TEXT | sql_types::MEDIUM_TEXT | sql_types::LONG_TEXT => {
             sql_types::TEXT.to_string()

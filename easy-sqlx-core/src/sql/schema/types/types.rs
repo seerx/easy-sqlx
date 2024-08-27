@@ -10,6 +10,8 @@ pub struct TypeRelation {
     pub maybe_types: Option<Vec<&'static str>>,
     /// sql 类型的固有长度
     pub fix_len: Option<isize>,
+    /// 没有指定长度时，使用此长度值
+    pub default_len: Option<isize>,
     // pub a: chrono::NaiveDate,
 }
 
@@ -39,17 +41,30 @@ impl SqlType {
                 len: if rel.fix_len.is_some() {
                     // 固定长度的 sql 数据类型
                     Some(rel.fix_len.unwrap())
-                } else if rust_type == "String" {
-                    // 字符串类型一定要有长度，如果未设置，则为 255
-                    if len.is_none() {
-                        Some(255)
-                    } else {
-                        len
-                    }
-                } else {
-                    // 其它类型使用设置的 len
+                } else if len.is_some() {
+                    // 提供了长度
                     len
+                } else {
+                    // 未提供长度
+                    if rel.default_len.is_some() {
+                        // 有默认长度，则使用默认长度
+                        rel.default_len
+                    } else {
+                        // 没有默认长度，则返回 None
+                        None
+                    }
                 },
+                // else if rust_type == "String" {
+                //     // 字符串类型一定要有长度，如果未设置，则为 255
+                //     if len.is_none() {
+                //         Some(255)
+                //     } else {
+                //         len
+                //     }
+                // } else {
+                //     // 其它类型使用设置的 len
+                //     len
+                // },
                 fixed_len: rel.fix_len.clone(),
                 ..Default::default()
             },
@@ -66,7 +81,7 @@ impl From<&String> for SqlType {
         let mut type_name = "".to_string();
         if reg.is_match(&value) {
             for (_, [name, len_str]) in reg.captures_iter(&value).map(|c| c.extract()) {
-                println!("{} - {}", name, len_str);
+                // println!("{} - {}", name, len_str);
                 let lens: Vec<&str> = len_str.split(",").into_iter().map(|s| s.trim()).collect();
                 if lens.len() > 0 {
                     // 多于 1 个长度参数
