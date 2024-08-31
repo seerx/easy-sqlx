@@ -603,6 +603,7 @@ dependencies = [
  "chrono",
  "easy-sqlx",
  "easy-sqlx-core",
+ "sqlx",
 ]
 
 [[package]]

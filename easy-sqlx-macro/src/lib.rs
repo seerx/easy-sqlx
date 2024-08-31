@@ -108,8 +108,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // 实现 comment 方法
     let output = quote! {
         impl #ident {
-             /// 获取数据库表名称
-             pub fn table_name() -> &'static str {
+            /// 获取数据库表名称
+            pub fn table_name() -> &'static str {
                 #table_name
             }
 

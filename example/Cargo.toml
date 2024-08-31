@@ -8,5 +8,6 @@ edition = "2021"
 # easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
 easy-sqlx-core = { path = "../easy-sqlx-core", features = ["postgres"] } 
 easy-sqlx = { path = "../" }
+sqlx.workspace = true
 
 chrono.workspace = true
