@@ -44,7 +44,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     } = input;
 
     // 解析 列 属性
-    let mut col_prop_methods: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut col_name_methods: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut col_names: Vec<String> = Vec::new();
     let mut cols = Vec::new();
     if let syn::Data::Struct(syn::DataStruct {
         struct_token: _,
@@ -58,12 +59,13 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     if let Some(column) = col {
                         // 生成列方法名称
                         let fn_name = syn::Ident::new(
-                            format!("col_{}", &column.name).as_str(),
+                            format!("col_{}_name", &column.name).as_str(),
                             Span::call_site(),
                         );
                         let col_name = column.get_column_name();
+                        col_names.push(col_name.clone());
                         // 添加列方法
-                        col_prop_methods.push(quote! {
+                        col_name_methods.push(quote! {
                             /// #col_name 列名称
                             pub fn #fn_name() -> &'static str {
                                 #col_name
@@ -87,19 +89,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let default_table_name = ident.clone().to_string().to_snake_case();
     // 解析表属性及索引
     let mut table = parse_table_attrs(&attrs, default_table_name)
-        // .map(|opt| {
-        //     if let Some(table) = opt {
-        //         table
-        //     } else {
-        //         Table::default()
-        //     }
-        // })
         .map_err(|err| panic!("{}", err))
         .unwrap();
-    // if table.name.is_empty() {
-    //     // 如果没有设置 name 属性
-    //     table.name = ident.clone().to_string().to_snake_case();
-    // }
     table.columns = cols.clone();
 
     if let Err(err) = table.check_indexes_columns() {
@@ -109,20 +100,32 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let table_name = table.name_with_schema();
 
+    // let schema_struct_name = syn::Ident::new(
+    //     format!("{}Schema", &ident.to_string()).as_str(),
+    //     Span::call_site(),
+    // );
+
     // 实现 comment 方法
     let output = quote! {
         impl #ident {
-            /// 获取数据库表名称
-            pub fn table_name() -> &'static str {
+             /// 获取数据库表名称
+             pub fn table_name() -> &'static str {
                 #table_name
             }
-            
+
             /// 获取表结构定义
             pub fn table() -> easy_sqlx_core::sql::schema::table::TableSchema {
                 #table
             }
 
-            #(#col_prop_methods) *
+            /// 列名称函数
+            #(#col_name_methods) *
+            /// 获取所有列名称
+            pub fn all_cols() -> Vec<&'static str> {
+                [#(#col_names), *].to_vec()
+            }
+
+            #(#col_name_methods) *
 
             // fn columns() -> Vec<easy_sqlx_core::sql::schema::column::Column> {
             //     [#(#cols), *].to_vec()

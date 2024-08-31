@@ -20,8 +20,8 @@ impl User {
 
 fn main() {
     User::table();
-    println!("table name: {}", User::table_name());
-    User::col_create_time();
+    println!("table name: {}", User::all_cols().join(","));
+    User::col_name_name();
     // sync_tables(conn, tables, default_schema)
     println!("Hello, world!");
 }
