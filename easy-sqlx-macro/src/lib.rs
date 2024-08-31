@@ -125,7 +125,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 [#(#col_names), *].to_vec()
             }
 
-            #(#col_name_methods) *
+            // #(#col_name_methods) *
 
             // fn columns() -> Vec<easy_sqlx_core::sql::schema::column::Column> {
             //     [#(#cols), *].to_vec()
