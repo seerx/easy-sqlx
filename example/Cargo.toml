@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tokio = { version = "1", features = ["full"] }
 # easy-sqlx-core = { git = "https://gitee.com/knowgo/easy-sqlx.git", features = ["postgres"] } 
 # easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
 easy-sqlx-core = { path = "../easy-sqlx-core", features = ["postgres"] } 

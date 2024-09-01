@@ -25,14 +25,18 @@ impl Default for Context {
 }
 
 impl Context {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(schema: String) -> Self {
+        let mut s = Self::default();
+        if !schema.is_empty() {
+            s.default_schema = schema;
+        }
+        s
     }
-    pub fn with_schema(default_schema: String) -> Self {
-        let mut ctx = Self::default();
-        ctx.default_schema = default_schema;
-        ctx
-    }
+    // pub fn with_schema(default_schema: String) -> Self {
+    //     let mut ctx = Self::default();
+    //     ctx.default_schema = default_schema;
+    //     ctx
+    // }
 
     pub fn quote(&self, str: &String) -> String {
         self.quoter.quote(str)

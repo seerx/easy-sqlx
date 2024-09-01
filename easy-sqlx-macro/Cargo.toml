@@ -3,6 +3,11 @@ name = "easy-sqlx-macro"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["postgres", "chrono"]
+postgres = []
+chrono = []
+
 [lib]
 proc-macro = true
 

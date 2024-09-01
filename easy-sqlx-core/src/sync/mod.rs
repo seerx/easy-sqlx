@@ -24,7 +24,7 @@ pub mod table;
 pub async fn sync_tables<C, DB: Database>(
     conn: &mut C,
     tables: Vec<TableSchema>,
-    default_schema: Option<String>,
+    default_schema: &str,
 ) -> io::Result<()>
 // where
 //     for<'e> &'e mut T: Executor<'e, Database = Postgres>,
@@ -39,7 +39,7 @@ where
     for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
 {
     // 查询数据库中表
-    let s = &dialects::schema::new(default_schema, &mut *conn);
+    let s = &dialects::schema::new(default_schema.to_string());
 
     // 删除含有 recreate 控制字段的表
     check_recreate(&tables, &mut *conn, s).await?;

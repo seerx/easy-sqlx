@@ -10,7 +10,7 @@ use schema::Schema;
 use sqlx::{ColumnIndex, Database, Decode, Encode, Executor, IntoArguments};
 // use sqlx::{Database, Executor, Postgres};
 
-pub fn new<'c, C, DB: Database>(default_sechma: Option<String>, _: &mut C) -> impl Schema<'c, C, DB>
+pub fn new<'c, C, DB: Database>(default_sechma: String) -> impl Schema<'c, C, DB>
 // impl Schema<Postgres, T>
 where
     for<'e> &'e mut C: Executor<'e, Database = DB>,
@@ -23,12 +23,8 @@ where
     for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
 {
     #[cfg(feature = "postgres")]
-    let a = PgSchema::new::<C, DB>(if let Some(s) = default_sechma {
-        Context::with_schema(s)
-    } else {
-        Context::new()
-    });
-    a
+    let schema = PgSchema::new::<C, DB>(Context::new(default_sechma));
+    schema
 }
 
 // Box<dyn schema::Schema<Connection = PgConnection>>

@@ -1,5 +1,3 @@
-use std::collections;
-
 use heck::ToSnakeCase;
 use proc_macro2::Span;
 use quote::quote;
@@ -47,6 +45,9 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut col_name_methods: Vec<proc_macro2::TokenStream> = Vec::new();
     let mut col_names: Vec<String> = Vec::new();
     let mut cols = Vec::new();
+
+    let mut keys = vec![];
+
     if let syn::Data::Struct(syn::DataStruct {
         struct_token: _,
         fields,
@@ -71,6 +72,11 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                                 #col_name
                             }
                         });
+                        // 主键
+                        if column.pk {
+                            keys.push(field);
+                        }
+
                         // 添加列
                         cols.push(column);
                     }
@@ -104,6 +110,23 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     //     format!("{}Schema", &ident.to_string()).as_str(),
     //     Span::call_site(),
     // );
+    #[cfg(feature = "postgres")]
+    let insert: proc_macro2::TokenStream = quote! {
+        pub async fn insert(&self, conn: &mut sqlx::PgConnection) -> sqlx::Result<PgQueryResult> {
+            let table = Self::table();
+            let schema = schema::new::<sqlx::PgConnection, sqlx::Postgres>("".to_owned());
+            let sql = schema.sql_insert(&table);
+            sqlx::query::<Postgres>(&sql)
+                .bind(self.id)
+                .bind(self.name.clone())
+                .bind(self.create_time)
+                .execute(conn)
+                .await.map_err(|err| {
+                    println!("execute {sql} {err}");
+                    err
+                })
+        }
+    };
 
     // 实现 comment 方法
     let output = quote! {
@@ -125,8 +148,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 [#(#col_names), *].to_vec()
             }
 
-            // #(#col_name_methods) *
-
+            #insert
             // fn columns() -> Vec<easy_sqlx_core::sql::schema::column::Column> {
             //     [#(#cols), *].to_vec()
             // }

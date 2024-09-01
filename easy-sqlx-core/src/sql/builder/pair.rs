@@ -1,6 +1,5 @@
-use sqlx::{Database, Encode, Type};
-
 pub enum Value {
+    NUll,
     Int(i32),
     Long(i64),
     Float(f64),
@@ -18,15 +17,7 @@ pub enum Value {
 //     }
 // }
 
-
-#[derive(Default)]
-pub struct Pair<T> 
-where
-    for<'q> T: 'q + Encode<'q, DB> + Type<DB>,
-{
-    db: Option<DB>,
+pub struct Pair {
     pub name: &'static str,
-    pub value: T,
+    pub value: Value,
 }
-
- 

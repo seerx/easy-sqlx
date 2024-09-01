@@ -54,4 +54,8 @@ where
         new: &Column,
     ) -> io::Result<Vec<String>>;
     fn sql_drop_column(&self, table: &TableSchema, col: &Column) -> String;
+
+
+    fn sql_insert(&self, table: &TableSchema) -> String; 
+    fn sql_insert_columns(&self, table: &TableSchema, cols: &Vec<Column>) -> String; 
 }
