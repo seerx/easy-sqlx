@@ -1,13 +1,15 @@
+use field::create_field_wrapper;
 use heck::ToSnakeCase;
-use insert::create_insert;
+use insert::{create_insert, create_insert_builder};
 use proc_macro2::Span;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
 mod attrs;
+mod field;
+mod insert;
 
 use attrs::{column::parse_column_attrs, table::parse_table_attrs};
-mod insert;
 
 /// 使用示例
 /// 定义表结构
@@ -43,10 +45,13 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         attrs, ident, data, ..
     } = input;
 
-    // 解析 列 属性
+    // 列名称函数
     let mut col_name_methods: Vec<proc_macro2::TokenStream> = Vec::new();
     let mut col_names: Vec<String> = Vec::new();
     let mut cols = Vec::new();
+
+    // 列属性函数
+    let mut col_wrapper_methods: Vec<proc_macro2::TokenStream> = Vec::new();
 
     let mut keys = vec![];
 
@@ -58,35 +63,42 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     {
         for field in fields {
             match parse_column_attrs(&field) {
-                Ok(col) => {
+                Ok((col, syn_type)) => {
                     if let Some(column) = col {
-                        let field_name = &column.name;
-                        // 生成列方法名称
-                        let fn_name = syn::Ident::new(
-                            format!("col_{}_name", &field_name).as_str(),
-                            Span::call_site(),
-                        );
-                        let col_name = column.get_column_name();
-                        col_names.push(col_name.clone());
-                        // 添加列方法
-                        col_name_methods.push(quote! {
-                            /// #col_name 列名称
-                            pub fn #fn_name() -> &'static str {
-                                #col_name
+                        if let Some(syn_type) = syn_type {
+                            let field_name = &column.name;
+                            // 生成列方法名称
+                            let fn_name = syn::Ident::new(
+                                format!("col_{}_name", &field_name).as_str(),
+                                Span::call_site(),
+                            );
+                            let col_name = column.get_column_name();
+                            col_names.push(col_name.clone());
+                            // 添加列方法
+                            col_name_methods.push(quote! {
+                                /// #col_name 列名称
+                                pub fn #fn_name() -> &'static str {
+                                    #col_name
+                                }
+                            });
+
+                            // 生成列函数
+                            let wrappers = create_field_wrapper(&column, &field, syn_type);
+                            col_wrapper_methods.extend(wrappers);
+
+                            // 主键
+                            if column.pk {
+                                keys.push(field);
                             }
-                        });
-                        // 主键
-                        if column.pk {
-                            keys.push(field);
+
+                            // let self_dot_name = syn::Ident::new(
+                            //     format!("$self.{}", &column.name).as_str(),
+                            //     Span::call_site(),
+                            // );
+
+                            // 添加列
+                            cols.push(column);
                         }
-
-                        // let self_dot_name = syn::Ident::new(
-                        //     format!("$self.{}", &column.name).as_str(),
-                        //     Span::call_site(),
-                        // );
-
-                        // 添加列
-                        cols.push(column);
                     }
                 }
                 Err(err) => {
@@ -114,12 +126,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let table_name = table.name_with_schema();
 
-    // let schema_struct_name = syn::Ident::new(
-    //     format!("{}Schema", &ident.to_string()).as_str(),
-    //     Span::call_site(),
-    // );
-
     let insert = create_insert(&table);
+    let build_insert = create_insert_builder();
 
     // 实现 comment 方法
     let output = quote! {
@@ -142,6 +150,10 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             }
 
             #insert
+
+            #build_insert
+
+            #(#col_wrapper_methods) *
             // fn columns() -> Vec<easy_sqlx_core::sql::schema::column::Column> {
             //     [#(#cols), *].to_vec()
             // }

@@ -1,16 +1,16 @@
 use easy_sqlx_core::sql::schema::{column::Column, types::types::SqlType};
 use easy_sqlx_utils::option_parser::parse_type_options;
-use syn::{spanned::Spanned, Error, Field};
+use syn::{spanned::Spanned, Error, Field, Type};
 
-pub fn parse_column_attrs(field: &Field) -> syn::Result<Option<Column>> {
+pub fn parse_column_attrs(field: &Field) -> syn::Result<(Option<Column>, Option<&Type>)> {
     // let attr
-
+    // Type::Path(TypePath::from("".to_string()))
     let ident_item = &field.ident;
     // 解析结构体字段名称
     let field_name = ident_item.clone().unwrap().to_string();
     // 解析数据类型
 
-    let (options, rust_type, _) = parse_type_options(&field.ty);
+    let (options, rust_type, syn_type) = parse_type_options(&field.ty);
     let has_option: bool = options > 0;
 
     let mut column = Column {
@@ -29,7 +29,7 @@ pub fn parse_column_attrs(field: &Field) -> syn::Result<Option<Column>> {
                 Ok(col) => {
                     if col.ignore {
                         // 忽略该字段
-                        return Ok(None);
+                        return Ok((None, None));
                     }
 
                     if rust_type == "String" {
@@ -58,47 +58,8 @@ pub fn parse_column_attrs(field: &Field) -> syn::Result<Option<Column>> {
             ));
         }
     }
-
-    // if let Some(res) = &mut field.attrs.iter().find_map(|attr| {
-    //     // field_name = format!("{field_name}_1");
-    //     if attr.path().is_ident("col") {
-    //         // field_name = format!("{field_name}_1_col");
-    //         return Some(attr.parse_args::<Column>());
-    //     }
-    //     None
-    // }) {
-    //     match res {
-    //         Ok(col) => {
-    //             if col.ignore {
-    //                 return Ok(None);
-    //             }
-    //             col.name = field_name; // format!("{field_name} - {}", col.column.clone().unwrap_or("---".to_string()));
-    //             col.nullable = has_option;
-    //             let typ = if rust_type == "String" {
-    //                 // 解析字符串长度
-    //                 // 解析 len 值
-    //                 easy_sqlx_core::sql::schema::types::types::SqlType::new(&rust_type, col.typ.len)
-    //             } else {
-    //                 // 解析其它类型
-    //                 easy_sqlx_core::sql::schema::types::types::SqlType::new(&rust_type, None)
-    //             };
-    //             col.typ = typ;
-    //             Ok(Some((*col).clone()))
-    //         }
-    //         Err(err) => Err((*err).clone()),
-    //     }
-    // } else {
-    //     // 没有  col 属性
-    //     let typ = easy_sqlx_core::sql::schema::types::types::SqlType::new(&rust_type, None);
-    //     Ok(Some(Column {
-    //         name: field_name,
-    //         typ,
-    //         // comment: Some("NONW".to_string()),
-    //         nullable: has_option,
-    //         ..Default::default()
-    //     }))
-    // }
-    Ok(Some(column))
+ 
+    Ok((Some(column), Some(syn_type)))
 }
 
 #[derive(Debug, Eq, PartialEq)]

@@ -34,6 +34,11 @@ macro_rules! impl_from_num_for_value {
 
 macro_rules! impl_from_clone_for_value {
     ($t:ty, $v:ident) => {
+        impl From<$t> for Value {
+            fn from(value: $t) -> Self {
+                Value::$v(Some(value.to_owned()))
+            }
+        }
 
         impl From<&$t> for Value {
             fn from(value: &$t) -> Self {

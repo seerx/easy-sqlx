@@ -42,3 +42,13 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
         }
     }
 }
+
+
+pub fn create_insert_builder() -> proc_macro2::TokenStream {
+    quote! {
+        pub fn build_insert<'a>() -> easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> {
+            let mut builder: easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> = easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder::new(Self::table());
+            builder
+        }
+    }
+}

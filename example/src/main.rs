@@ -1,11 +1,8 @@
 // use easy_sqlx::Table;
 
 use easy_sqlx::{sync_tables, Table};
-use easy_sqlx_core::sql::{builder::{builder::Builder, easy_insert_builder::InsertBuilder}, dialects::schema::{self, schema::Schema}, utils::{pair::Pair, value::Value}};
-use sqlx::{
-    postgres::{PgArguments, PgConnectOptions, PgQueryResult},
-    Connection, PgConnection, Postgres,
-};
+use easy_sqlx_core::sql::builder::builder::Builder;
+use sqlx::{postgres::PgConnectOptions, Connection, PgConnection};
 
 #[derive(Table, Default)]
 #[index(columns("name"))]
@@ -18,29 +15,9 @@ pub struct User {
 }
 
 impl User {
-    pub fn id(&self) -> i64 {
-        self.id
-    }
-
-    pub fn insert1<'a>(&self) -> InsertBuilder<'a> {
-        
-        let mut builder: InsertBuilder<'a> = InsertBuilder::new(Self::table());
-        for col in Self::table().columns {
-            let p = Pair{
-                name: col.get_column_name(),
-                value: Value::from(&self.id),
-            };
-            builder.add_column(p);
-
-            let p = Pair {
-                name: col.get_column_name(),
-                value: Value::from(&self.name),
-            };
-            builder.add_column(p);
-        }
-        
-        builder
-    }
+    // pub fn id(&self) -> i64 {
+    //     self.id
+    // }
 
     // pub async fn insert(&self, conn: &mut PgConnection) -> sqlx::Result<PgQueryResult> {
     //     let table = Self::table();
@@ -79,6 +56,10 @@ async fn main() {
     // 增加完整记录
     let a = user.insert().execute(&mut conn).await.unwrap();
     println!("{:?}", a);
+    User::create_time(val)
+    // User::cre
+
+    // User::
 
     // User::tes
 
