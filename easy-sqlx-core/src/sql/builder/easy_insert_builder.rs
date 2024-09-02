@@ -30,7 +30,6 @@ impl<'a> InsertBuilder<'a> {
     }
 
     pub fn add_column(&mut self, pair: Pair) {
-        println!("add: {}", &pair.name);
         self.columns.push(pair);
     }
 }
@@ -49,10 +48,7 @@ impl<'a> Builder for InsertBuilder<'a>
         for<'e> &'e mut C: Executor<'e, Database = Self::DB>,
     {
         let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
-
-        println!("columns:   {:?}", &self.columns);
         let cols: Vec<String> = self.columns.iter().map(|c| c.name.to_string()).collect();
-        println!("{:?}", &cols);
         let sql = schema.sql_insert_columns(&self.table, &cols);
 
         let mut query: sqlx::query::Query<'_, Self::DB, <Self::DB as Database>::Arguments<'_>> =
@@ -62,7 +58,7 @@ impl<'a> Builder for InsertBuilder<'a>
             query = col.bind_to_query(query);
         }
 
-        println!("{:?}", query.sql());
+        tracing::debug!("easy-sqlx: {}", query.sql());
 
         query.execute(conn).await
     }

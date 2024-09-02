@@ -72,13 +72,12 @@ async fn main() {
         .unwrap();
 
     let user = User {
-        id: 5,
+        id: 6,
         name: "222".to_string(),
         ..Default::default()
     };
-
-    let a = user.insert();
-    a.execute(&mut conn).await.unwrap();
+    // 增加完整记录
+    let a = user.insert().execute(&mut conn).await.unwrap();
     println!("{:?}", a);
 
     // User::tes
