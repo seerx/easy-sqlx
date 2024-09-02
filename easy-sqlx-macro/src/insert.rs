@@ -12,7 +12,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
         if col.nullable {
             insert_bind_args.push(quote! {
                 // let #this = self;
-                builder.add_column(easy_sqlx_core::sql::utils::pair::Pair {
+                builder = builder.set_column(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(self.#field_name),
                 });
@@ -20,7 +20,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
         } else {
             insert_bind_args.push(quote! {
                 // let #this = self;
-                builder.add_column(easy_sqlx_core::sql::utils::pair::Pair {
+                builder = builder.set_column(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(&self.#field_name),
                 });
@@ -28,10 +28,10 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
         }
     }
     quote! {
-        pub fn insert<'a>(&self) -> easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> {
+        pub fn insert<'a>(&self) -> easy_sqlx_core::sql::builder::insert_builder::InsertBuilder<'a> {
             // let table = &Self::table();
             let #this = self;
-            let mut builder: easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> = easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder::new(Self::table());
+            let mut builder: easy_sqlx_core::sql::builder::insert_builder::InsertBuilder<'a> = easy_sqlx_core::sql::builder::insert_builder::InsertBuilder::new(Self::table());
             // for col in Self::table().columns {
 
             // println!("insert 1");
@@ -46,8 +46,8 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
 
 pub fn create_insert_builder() -> proc_macro2::TokenStream {
     quote! {
-        pub fn build_insert<'a>() -> easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> {
-            let mut builder: easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> = easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder::new(Self::table());
+        pub fn build_insert<'a>() -> easy_sqlx_core::sql::builder::insert_builder::InsertBuilder<'a> {
+            let mut builder: easy_sqlx_core::sql::builder::insert_builder::InsertBuilder<'a> = easy_sqlx_core::sql::builder::insert_builder::InsertBuilder::new(Self::table());
             builder
         }
     }

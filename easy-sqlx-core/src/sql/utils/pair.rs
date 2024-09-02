@@ -34,6 +34,16 @@ impl Pair {
             Value::Byte(val) => query.bind(*val),
             Value::Short(val) => query.bind(*val),
             Value::Float(val) => query.bind(*val),
+            Value::Bool(val) => query.bind(*val),
+            Value::LongArray(ary) => {
+                let mut qry = query;
+                if !ary.is_empty() {
+                    for val in ary {
+                        qry = qry.bind(*val);
+                    }
+                }
+                qry
+            }
         };
         // query = query.bind(0i32);
         // query

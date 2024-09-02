@@ -2,11 +2,9 @@ use std::future::Future;
 
 use sqlx::{Database, Error, Executor};
 
-pub trait Builder
-// for<'e> Option<T>: sqlx::Decode<'e, DB> + sqlx::Encode<'e, DB> + sqlx::Type<DB>,
-{
+pub trait Builder {
     type DB: Database;
-    
+
     fn execute<C>(
         &self,
         conn: &mut C,
