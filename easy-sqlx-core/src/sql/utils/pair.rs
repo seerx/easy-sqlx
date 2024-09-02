@@ -1,5 +1,4 @@
-use chrono::NaiveDateTime;
-use sqlx::{postgres::PgArguments, types::JsonRawValue, Database, Postgres};
+use sqlx::{postgres::PgArguments, Postgres};
 
 use super::value::Value;
 
@@ -21,7 +20,7 @@ pub struct Pair {
 }
 
 impl Pair {
-    #[cfg(feature="postgres")]
+    #[cfg(feature = "postgres")]
     pub fn bind_to_query<'a>(
         &self,
         query: sqlx::query::Query<'a, Postgres, PgArguments>,
@@ -34,6 +33,7 @@ impl Pair {
             Value::Text(val) => query.bind(val.clone()),
             Value::Byte(val) => query.bind(*val),
             Value::Short(val) => query.bind(*val),
+            Value::Float(val) => query.bind(*val),
         };
         // query = query.bind(0i32);
         // query

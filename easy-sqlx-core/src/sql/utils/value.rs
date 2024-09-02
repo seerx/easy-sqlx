@@ -4,6 +4,7 @@ pub enum Value {
     Short(Option<i16>),
     Int(Option<i32>),
     Long(Option<i64>),
+    Float(Option<f32>),
     Double(Option<f64>),
     Text(Option<String>),
     ChronoDate(Option<chrono::NaiveDateTime>),
@@ -57,6 +58,7 @@ impl_from_num_for_value!(i64, Long);
 // impl_from_num_for_value!(u32, Long);
 // impl_from_num_for_value!(u64, Long);
 impl_from_num_for_value!(f64, Double);
+impl_from_num_for_value!(f32, Float);
 impl_from_clone_for_value!(chrono::NaiveDateTime, ChronoDate);
 impl_from_clone_for_value!(String, Text);
 

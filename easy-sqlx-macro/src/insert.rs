@@ -11,7 +11,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
         let col_name = &col.get_column_name();
         if col.nullable {
             insert_bind_args.push(quote! {
-                let #this = self;
+                // let #this = self;
                 builder.add_column(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(self.#field_name),
@@ -19,7 +19,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
             });
         } else {
             insert_bind_args.push(quote! {
-                let #this = self;
+                // let #this = self;
                 builder.add_column(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(&self.#field_name),
@@ -30,7 +30,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
     quote! {
         pub fn insert<'a>(&self) -> easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> {
             // let table = &Self::table();
-
+            let #this = self;
             let mut builder: easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder<'a> = easy_sqlx_core::sql::builder::easy_insert_builder::InsertBuilder::new(Self::table());
             // for col in Self::table().columns {
 
