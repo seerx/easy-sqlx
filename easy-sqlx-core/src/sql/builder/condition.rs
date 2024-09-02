@@ -1,16 +1,15 @@
-use super::pair::Pair;
-
+use crate::sql::utils::pair::Pair;
 
 pub enum Operator {
-    Eq, // =
-    Neq, // <>
-    Gt, // >
-    Ge, // >=
-    Lt, // <
-    Le, // <=
-    In, // in
-    Like, // like
-    Is, // is
+    Eq,    // =
+    Neq,   // <>
+    Gt,    // >
+    Ge,    // >=
+    Lt,    // <
+    Le,    // <=
+    In,    // in
+    Like,  // like
+    Is,    // is
     IsNot, // is not
 }
 
@@ -18,7 +17,6 @@ pub struct Condition {
     // pub andor: AndOr,
     pub data: Pair,
     pub operator: Operator,
-    
 }
 
 pub enum AndOr {

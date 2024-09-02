@@ -1,4 +1,5 @@
 use heck::ToSnakeCase;
+use insert::create_insert;
 use proc_macro2::Span;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
@@ -6,6 +7,7 @@ use syn::{parse_macro_input, DeriveInput};
 mod attrs;
 
 use attrs::{column::parse_column_attrs, table::parse_table_attrs};
+mod insert;
 
 /// 使用示例
 /// 定义表结构
@@ -58,9 +60,10 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             match parse_column_attrs(&field) {
                 Ok(col) => {
                     if let Some(column) = col {
+                        let field_name = &column.name;
                         // 生成列方法名称
                         let fn_name = syn::Ident::new(
-                            format!("col_{}_name", &column.name).as_str(),
+                            format!("col_{}_name", &field_name).as_str(),
                             Span::call_site(),
                         );
                         let col_name = column.get_column_name();
@@ -76,6 +79,11 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                         if column.pk {
                             keys.push(field);
                         }
+
+                        // let self_dot_name = syn::Ident::new(
+                        //     format!("$self.{}", &column.name).as_str(),
+                        //     Span::call_site(),
+                        // );
 
                         // 添加列
                         cols.push(column);
@@ -110,23 +118,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     //     format!("{}Schema", &ident.to_string()).as_str(),
     //     Span::call_site(),
     // );
-    #[cfg(feature = "postgres")]
-    let insert: proc_macro2::TokenStream = quote! {
-        pub async fn insert(&self, conn: &mut sqlx::PgConnection) -> sqlx::Result<PgQueryResult> {
-            let table = Self::table();
-            let schema = schema::new::<sqlx::PgConnection, sqlx::Postgres>("".to_owned());
-            let sql = schema.sql_insert(&table);
-            sqlx::query::<Postgres>(&sql)
-                .bind(self.id)
-                .bind(self.name.clone())
-                .bind(self.create_time)
-                .execute(conn)
-                .await.map_err(|err| {
-                    println!("execute {sql} {err}");
-                    err
-                })
-        }
-    };
+
+    let insert = create_insert(&table);
 
     // 实现 comment 方法
     let output = quote! {

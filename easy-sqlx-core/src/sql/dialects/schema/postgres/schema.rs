@@ -287,25 +287,34 @@ where
 
     fn sql_insert(&self, table: &TableSchema) -> String {
         // let table_name = table.name_with_schema();
-        let mut column_names = "".to_string();
-        let mut column_value_holder = "".to_string();
+        // let mut column_names = "".to_string();
+        // let mut column_value_holder = "".to_string();
 
-        for (n, col) in table.columns.iter().enumerate() {
-            if n > 0 {
-                column_names.push_str(",");
-                column_value_holder.push_str(",");
-            }
-            column_names.push_str(col.get_column_name().as_str());
-            column_value_holder.push_str(format!("${}", n + 1).as_str());
-        }
+        // for (n, col) in table.columns.iter().enumerate() {
+        //     if n > 0 {
+        //         column_names.push_str(",");
+        //         column_value_holder.push_str(",");
+        //     }
+        //     column_names.push_str(col.get_column_name().as_str());
+        //     column_value_holder.push_str(format!("${}", n + 1).as_str());
+        // }
 
-        format!(
-            "insert into {} ({column_names}) values ({column_value_holder})",
-            self.ctx.quote(&self.table_name_with_schema(table))
+        // format!(
+        //     "insert into {} ({column_names}) values ({column_value_holder})",
+        //     self.ctx.quote(&self.table_name_with_schema(table))
+        // )
+
+        self.sql_insert_columns(
+            table,
+            &table
+                .columns
+                .iter()
+                .map(|c| c.get_column_name())
+                .collect::<Vec<String>>(),
         )
     }
 
-    fn sql_insert_columns(&self, table: &TableSchema, cols: &Vec<Column>) -> String {
+    fn sql_insert_columns(&self, table: &TableSchema, cols: &Vec<String>) -> String {
         // let table_name = table.name_with_schema();
         let mut column_names = "".to_string();
         let mut column_value_holder = "".to_string();
@@ -315,7 +324,7 @@ where
                 column_names.push_str(",");
                 column_value_holder.push_str(",");
             }
-            column_names.push_str(col.get_column_name().as_str());
+            column_names.push_str(self.ctx.quote(&col).as_str());
             column_value_holder.push_str(format!("${}", n + 1).as_str());
         }
 
