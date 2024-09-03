@@ -1,7 +1,11 @@
 // use easy_sqlx::Table;
 
+use chrono::Local;
 use easy_sqlx::{sync_tables, Table};
-use easy_sqlx_core::sql::dialects::condition::{Where, WhereAppend};
+use easy_sqlx_core::sql::{
+    builder::builder::Builder,
+    dialects::condition::{Where, WhereAppend},
+};
 // use easy_sqlx_core::sql::builder::insert_builder::InsertBuilder;
 use sqlx::{postgres::PgConnectOptions, Connection, PgConnection};
 
@@ -50,38 +54,30 @@ async fn main() {
         .await
         .unwrap();
 
-    // let user = User {
-    //     id: 7,
-    //     name: "222".to_string(),
-    //     ..Default::default()
-    // };
+    let user = User {
+        id: 7,
+        name: "777".to_string(),
+        create_time: Some(Local::now().naive_local()),
+        // ..Default::default()
+    };
     // // 增加完整记录
     // let a = user.insert().execute(&mut conn).await.unwrap();
     // println!("{:?}", a);
-    // User::build_insert()
-    //     .set_column(User::id(100))
-    //     .set_column(User::name("Ok".to_string()))
-    //     .execute(&mut conn)
-    //     .await
-    //     .unwrap();
 
-    // let cond = Condition::And(
-    //     Box::new(Condition::Condition(User::id(100), Operator::In)),
-    //     Box::new(Condition::Condition(User::id(200), Operator::Le)));
-    // User::id_in(val)
+    let a = user.update();
 
-    let w1 = Where::new(User::id_ge(100));
+    a.execute(&mut conn).await.unwrap();
 
-    let w = Where::new(User::id_in(vec![100, 200]))
-        .or(User::id_eq(200))
-        .and(User::create_time_is_null())
-        .and(w1);
-    // .and(w);
-    // let cond = Condition::Condition(User::id(100), Operator::Ge);
-    // User::name_eq(100);
-    // User::id_neq(val)
-    let (sql, _) = w.sql(1);
-    println!("{sql}");
+    User::build_update()
+        .set_column(User::name("O01".to_string()))
+        .and(User::id_eq(2))
+        .execute(&mut conn)
+        .await
+        .unwrap();
+
+    // let update = User::build_update();
+    // update.and(User::id_eq(100));
+
     // User::create_time(val);
     // User::cre
 

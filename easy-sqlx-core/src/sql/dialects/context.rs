@@ -5,13 +5,14 @@ use easy_sqlx_utils::ternary;
 
 use crate::sql::schema::{column::Column, index::Index};
 
-use super::quote::{ always_reserve, Quoter};
+use crate::sql::utils::quote::{ always_reserve, Quoter};
 
 const DEFAULT_SCHEMA: &str = "public";
 
+
 pub struct Context {
     default_schema: String,
-    quoter: Quoter,
+    pub quoter: Quoter,
 }
 
 impl Default for Context {

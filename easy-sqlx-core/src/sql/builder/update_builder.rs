@@ -4,6 +4,7 @@ use crate::sql::{
     utils::pair::Pair,
 };
 
+use sqlx::{Database, Execute as _};
 use super::builder::Builder;
 
 #[derive(Debug)]
@@ -75,9 +76,9 @@ impl<'a> WhereAppend<Where> for UpdateBuilder<'a> {
     }
 }
 
-use sqlx::{Database, Execute as _};
 #[cfg(feature = "postgres")]
 use sqlx::Postgres;
+
 impl<'a> Builder for UpdateBuilder<'a> {
     #[cfg(feature = "postgres")]
     type DB = Postgres;
@@ -90,15 +91,18 @@ impl<'a> Builder for UpdateBuilder<'a> {
         for<'e> &'e mut C: sqlx::Executor<'e, Database = Self::DB>,
     {
         let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
+        
         let cols: Vec<String> = self.columns.iter().map(|c| c.name.to_string()).collect();
         let mut sql = schema.sql_update_columns(&self.table, &cols);
         if let Some(w) = &self.wh {
-            let (ws, _) = w.sql(self.columns.len());
+            let (ws, _) = w.sql(self.columns.len() + 1, &schema.quoter());
             if !ws.is_empty() { 
                 sql.push_str(" where ");
                 sql.push_str(&ws);
             }
         }
+
+        // tracing::info!("easy-sqlx: {}", &sql);
         // let w_sql = self.wh
         let mut query: sqlx::query::Query<'_, Self::DB, <Self::DB as Database>::Arguments<'_>> =
             sqlx::query::<Self::DB>(&sql);

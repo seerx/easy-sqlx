@@ -13,6 +13,7 @@ mod insert;
 mod update;
 
 use attrs::{column::parse_column_attrs, table::parse_table_attrs};
+use update::{create_update, create_update_builder};
 
 /// 使用示例
 /// 定义表结构
@@ -140,6 +141,9 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let insert = create_insert(&table);
     let build_insert = create_insert_builder();
 
+    let update = create_update(&table, &ident);
+    let build_update = create_update_builder();
+
     // 实现 comment 方法
     let output = quote! {
         impl #ident {
@@ -161,8 +165,10 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             }
 
             #insert
-
             #build_insert
+
+            #update
+            #build_update
 
             #(#col_wrapper_methods) *
 

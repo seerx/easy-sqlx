@@ -1,6 +1,6 @@
 use sqlx::{Database, Executor, IntoArguments};
 
-use crate::sql::schema::{column::Column, index::Index, table::TableSchema};
+use crate::sql::{schema::{column::Column, index::Index, table::TableSchema}, utils::quote::Quoter};
 use std::{future::Future, io};
 
 pub trait Schema<'c, C, DB: Database>
@@ -8,6 +8,8 @@ where
     for<'e> &'e mut C: Executor<'e, Database = DB>,
     for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
 {
+    fn quoter(&self) -> Quoter;
+    
     // type DB: Database;
     // fn check_upgrade_table(&self, conn: &mut C) -> impl Future<Output = io::Result<()>> + Send;
     fn query_upgrade_tags(

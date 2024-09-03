@@ -1,4 +1,4 @@
-use crate::sql::utils::pair::Pair;
+use crate::sql::utils::{pair::Pair, quote::Quoter};
 
 #[derive(PartialEq, Debug)]
 pub enum Operator {
@@ -145,7 +145,7 @@ impl Condition {
         }
     }
 
-    pub fn sql(&self, param_index: usize) -> (String, usize) {
+    pub fn sql(&self, param_index: usize, quoter: &Quoter) -> (String, usize) {
         match self {
             Condition::Condition(p, o) => {
                 let field = p.name.clone();
@@ -153,7 +153,7 @@ impl Condition {
 
                 if o.is_not_param() {
                     // 不需要参数
-                    return (format!("{field} {op}"), param_index);
+                    return (format!("{} {op}", quoter.quote(&field)), param_index);
                 }
 
                 if *o == Operator::In {
@@ -165,15 +165,15 @@ impl Condition {
                     }
 
                     return (
-                        format!("{field} {op} ({})", params.join(",")),
+                        format!("{} {op} ({})", quoter.quote(&field), params.join(",")),
                         param_index + p.value.len(),
                     );
                 }
-                (format!("{field} {op} ${param_index}"), param_index + 1)
+                (format!("{} {op} ${param_index}", quoter.quote(&field)), param_index + 1)
             }
             Condition::And(left, right) => {
-                let (left_cond, index) = left.sql(param_index);
-                let (right_cond, index) = right.sql(index);
+                let (left_cond, index) = left.sql(param_index, quoter);
+                let (right_cond, index) = right.sql(index, quoter);
                 if left.is_or() {
                     if right.is_or() {
                         (format!("({left_cond}) and ({right_cond})"), index)
@@ -189,8 +189,8 @@ impl Condition {
                 }
             }
             Condition::Or(left, right) => {
-                let (left_cond, index) = left.sql(param_index);
-                let (right_cond, index) = right.sql(index);
+                let (left_cond, index) = left.sql(param_index, quoter);
+                let (right_cond, index) = right.sql(index, quoter);
                 if left.is_and() {
                     if right.is_and() {
                         (format!("({left_cond}) or ({right_cond})"), index)
@@ -400,9 +400,9 @@ impl Where {
     //     self
     // }
 
-    pub fn sql(&self, param_index: usize) -> (String, usize) {
+    pub fn sql(&self, param_index: usize, quoter: &Quoter) -> (String, usize) {
         if let Some(cond) = &self.cond {
-            cond.sql(param_index)
+            cond.sql(param_index, quoter)
         } else {
             ("".to_string(), param_index)
         }

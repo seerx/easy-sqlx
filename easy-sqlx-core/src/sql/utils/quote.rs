@@ -14,6 +14,7 @@ pub fn always_reserve(_str: &String) -> bool {
     true
 }
 
+#[derive(Clone)]
 pub struct Quoter {
     prefix: u8,
     suffix: u8,

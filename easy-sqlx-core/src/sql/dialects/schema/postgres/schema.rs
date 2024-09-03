@@ -347,9 +347,13 @@ where
         }
 
         format!(
-            "update {} {columns}",
+            "update {} set {columns}",
             self.ctx.quote(&self.table_name_with_schema(table))
         )
+    }
+    
+    fn quoter(&self) -> crate::sql::utils::quote::Quoter {
+        self.ctx.quoter.clone()
     }
     
     // async fn execute_sql<'c, E>(
