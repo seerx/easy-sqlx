@@ -34,6 +34,7 @@ use update::{create_update, create_update_builder};
 ///         pub name: Option<String>,
 ///         #[col(ignore)]
 ///         pub t_o: chrono::NaiveTime,
+///         pub blob: Vec<u8>,
 ///     }
 /// ```
 /// 同步表结构

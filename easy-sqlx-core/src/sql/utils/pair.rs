@@ -14,7 +14,7 @@ use super::value::Value;
 //     }
 // }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Pair {
     pub name: String,
     pub value: Value,

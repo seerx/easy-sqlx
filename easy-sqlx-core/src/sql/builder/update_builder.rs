@@ -93,14 +93,14 @@ impl<'a> Builder for UpdateBuilder<'a> {
         let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
         
         let cols: Vec<String> = self.columns.iter().map(|c| c.name.to_string()).collect();
-        let mut sql = schema.sql_update_columns(&self.table, &cols);
-        if let Some(w) = &self.wh {
-            let (ws, _) = w.sql(self.columns.len() + 1, &schema.quoter());
-            if !ws.is_empty() { 
-                sql.push_str(" where ");
-                sql.push_str(&ws);
-            }
-        }
+        let mut sql = schema.sql_update_columns(&self.table, &cols, self.wh.clone());
+        // if let Some(w) = &self.wh {
+        //     let (ws, _) = w.sql(self.columns.len() + 1, &schema.quoter());
+        //     if !ws.is_empty() { 
+        //         sql.push_str(" where ");
+        //         sql.push_str(&ws);
+        //     }
+        // }
 
         // tracing::info!("easy-sqlx: {}", &sql);
         // let w_sql = self.wh

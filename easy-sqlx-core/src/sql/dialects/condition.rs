@@ -1,6 +1,6 @@
 use crate::sql::utils::{pair::Pair, quote::Quoter};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Operator {
     Eq,        // =
     Neq,       // <>
@@ -84,7 +84,7 @@ impl Operator {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Condition {
     Condition(Pair, Operator),
     And(Box<Condition>, Box<Condition>),
@@ -214,7 +214,7 @@ pub trait WhereAppend<T> {
     fn or(self, cond: T) -> Self;
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Where {
     cond: Option<Box<Condition>>,
     // params: Vec<Value>,

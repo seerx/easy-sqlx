@@ -1,6 +1,6 @@
 use sqlx::{Database, Executor, IntoArguments};
 
-use crate::sql::{schema::{column::Column, index::Index, table::TableSchema}, utils::quote::Quoter};
+use crate::sql::{dialects::condition::Where, schema::{column::Column, index::Index, table::TableSchema}, utils::quote::Quoter};
 use std::{future::Future, io};
 
 pub trait Schema<'c, C, DB: Database>
@@ -60,5 +60,5 @@ where
 
     fn sql_insert(&self, table: &TableSchema) -> String; 
     fn sql_insert_columns(&self, table: &TableSchema, cols: &Vec<String>) -> String; 
-    fn sql_update_columns(&self, table: &TableSchema, cols: &Vec<String>) -> String; 
+    fn sql_update_columns(&self, table: &TableSchema, cols: &Vec<String>, wh: Option<Where>) -> String; 
 }

@@ -56,7 +56,7 @@ async fn main() {
         .unwrap();
 
     let user = User {
-        id: 7,
+        id: 8,
         name: "777".to_string(),
         create_time: Some(Local::now().naive_local()),
         ..Default::default()
@@ -70,8 +70,8 @@ async fn main() {
     a.execute(&mut conn).await.unwrap();
 
     User::build_update()
-        .set_column(User::name("O01".to_string()))
-        .and(User::id_eq(2))
+        .set_column(User::name("007".to_string()))
+        .and(User::id_eq(7))
         .execute(&mut conn)
         .await
         .unwrap();

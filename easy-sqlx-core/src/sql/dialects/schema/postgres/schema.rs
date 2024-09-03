@@ -5,7 +5,7 @@ use sqlx::{ColumnIndex, Database, Decode, Encode, Executor, IntoArguments, Type}
 // use tracing_subscriber::fmt::format;
 
 use crate::sql::{
-    dialects::{context, schema::schema::Schema},
+    dialects::{condition::Where, context, schema::schema::Schema},
     schema::{column::Column, index::Index, table::TableSchema, types::convert_sql_type},
 };
 
@@ -334,7 +334,7 @@ where
         )
     }
 
-    fn sql_update_columns(&self, table: &TableSchema, cols: &Vec<String>) -> String {
+    fn sql_update_columns(&self, table: &TableSchema, cols: &Vec<String>, wh: Option<Where>) -> String {
         let mut columns = "".to_string();
 
         for (n, col) in cols.iter().enumerate() {
@@ -346,8 +346,17 @@ where
             columns.push_str(format!("${}", n + 1).as_str());
         }
 
+        let mut where_str = String::from("");
+        if let Some(w) = wh {
+            let (ws, _) = w.sql(cols.len() + 1, &self.quoter());
+            if !ws.is_empty() { 
+                where_str.push_str(" where ");
+                where_str.push_str(&ws);
+            }
+        }
+
         format!(
-            "update {} set {columns}",
+            "update {} set {columns} {where_str}",
             self.ctx.quote(&self.table_name_with_schema(table))
         )
     }
