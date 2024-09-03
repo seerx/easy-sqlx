@@ -19,7 +19,7 @@ easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
 ```
 #### 使用说明
 
-使用示例
+##### 同步表结构
 定义表结构 #[derive(Table)]
 ```
 #[derive(Table)]
@@ -42,4 +42,24 @@ struct Table1 {
 同步表结构，参数 connection 为数据库连接
 ```
 sync_tables(connection, vec![Table1::table()], None).await?;
+```
+
+##### 添加记录 1
+```
+let table = Table1 {
+    id: "test001".to_string(),
+    name: "test".to_string(), 
+    ..Default::default()
+};
+// 增加完整记录
+table.insert().execute(&mut conn).await.unwrap();
+```
+
+##### 添加记录 2
+```
+Table1::build_insert()
+    .set_column(Table1::id("11".to_string()))
+    .execute(&mut conn)
+    .await
+    .unwrap();
 ```
