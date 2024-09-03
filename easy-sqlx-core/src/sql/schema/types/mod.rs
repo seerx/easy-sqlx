@@ -66,6 +66,7 @@ pub fn match_sql_type(sql_type: &String) -> std::io::Result<&'static str> {
             }
     });
     if tr.is_some() {
+        // println!("{}.{}", sql_type, tr.unwrap().sql);
         return Ok(tr.unwrap().sql);
     }
     Err(std::io::Error::new(

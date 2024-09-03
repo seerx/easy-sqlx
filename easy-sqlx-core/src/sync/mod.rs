@@ -55,6 +55,8 @@ where
                     let sqls = s.sql_alter_column(&table, &db_col, &col)?;
                     for sql in sqls {
                         s.execute_sql(&mut *conn, &sql).await?;
+                        // println!("column: {sql}");
+                        // println!("column: {:?}", db_col);
                     }
                 } else {
                     // 列不存在，添加列

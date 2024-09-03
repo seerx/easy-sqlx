@@ -16,8 +16,9 @@ pub struct User {
     pub id: i64,
     #[col(len = 30)]
     pub name: String,
+    pub blob: Vec<u8>,
     pub create_time: Option<chrono::NaiveDateTime>,
-    // pub blob: Vec<u8>,
+    
 }
 
 impl User {
@@ -58,14 +59,14 @@ async fn main() {
         id: 7,
         name: "777".to_string(),
         create_time: Some(Local::now().naive_local()),
+        ..Default::default()
         // ..Default::default()
     };
-    // // 增加完整记录
-    // let a = user.insert().execute(&mut conn).await.unwrap();
+    // 增加完整记录
+    user.insert().execute(&mut conn).await.unwrap();
     // println!("{:?}", a);
 
     let a = user.update();
-
     a.execute(&mut conn).await.unwrap();
 
     User::build_update()

@@ -12,6 +12,7 @@ pub const R_F16: &str = "f16";
 pub const R_F32: &str = "f32";
 pub const R_F64: &str = "f64";
 pub const R_STRING: &str = "String";
+pub const R_BINARY: &str = "Vec<u8>";
 #[cfg(feature="chrono")] 
 pub const R_CHRONO_DATE: &str = "NaiveDate";
 #[cfg(feature="chrono")]

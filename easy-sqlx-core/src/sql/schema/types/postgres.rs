@@ -5,7 +5,7 @@ use crate::sql::schema::{
     column::Column,
     types::{
         rust_types::{
-            R_BOOL, R_CHAR, R_CHRONO_DATE, R_CHRONO_DATETIME, R_CHRONO_DATETIME_FULL,
+            R_BINARY, R_BOOL, R_CHAR, R_CHRONO_DATE, R_CHRONO_DATETIME, R_CHRONO_DATETIME_FULL,
             R_CHRONO_DATE_FULL, R_CHRONO_TIME, R_CHRONO_TIME_FULL, R_F32, R_F64, R_I16, R_I32,
             R_I64, R_I8, R_STRING, R_U16, R_U32, R_U64, R_U8,
         },
@@ -108,15 +108,26 @@ lazy_static! {
             default_len: Some(255),
         },
         TypeRelation {
+            rust: R_BINARY,
+            sql: super::sql_types::BLOB,
+            maybe_types: Some(vec![
+                super::sql_types::MEDIUM_BLOB,
+                super::sql_types::LONG_BLOB,
+                super::sql_types::TINY_BLOB
+            ]),
+            fix_len: None,
+            default_len: None,
+        },
+        TypeRelation {
             rust: R_CHRONO_DATE,
-            sql: super::sql_types::DATE,
+            sql: super::sql_types::TIME_STAMP,
             maybe_types: Some(vec![super::sql_types::TIMESTAMP_WITHOUT_TIME_ZONE]),
             fix_len: None,
             default_len: None,
         },
         TypeRelation {
             rust: R_CHRONO_DATE_FULL,
-            sql: super::sql_types::DATE,
+            sql: super::sql_types::TIME_STAMP,
             maybe_types: Some(vec![super::sql_types::TIMESTAMP_WITHOUT_TIME_ZONE]),
             fix_len: None,
             default_len: Some(6),

@@ -4,6 +4,10 @@ pub fn is_option(ty: &str) -> bool {
     OPTIONS_TYPE.contains(&ty)
 }
 
+pub fn is_vec(ty: &str) -> bool {
+    ty == "Vec"
+}
+
 // pub fn parse_size(lit: &Option<Lit>) -> Option<isize> {
 //      if let Some(len) = lit {
 //         match len {
@@ -43,7 +47,7 @@ pub fn is_option(ty: &str) -> bool {
 //     "".to_string()
 // }
 
-pub fn parse_type_options(ty: &syn::Type) -> (isize, String, &syn::Type) {
+pub fn parse_type_options(ty: &syn::Type) -> (isize, String, &syn::Type, bool) {
     if let syn::Type::Path(p) = ty {
         let idents_path = p
             .path
@@ -59,14 +63,32 @@ pub fn parse_type_options(ty: &syn::Type) -> (isize, String, &syn::Type) {
                     if let syn::GenericArgument::Type(ref ty) = params.args.first().unwrap() {
                         // 解析泛型
                         // 继续下一层解析
-                        let (option_count, path, typ) = parse_type_options(ty);
-                        return (option_count + 1, path, typ);
+                        let (option_count, path, typ, is_vec) = parse_type_options(ty);
+                        return (option_count + 1, path, typ, is_vec);
                     }
                 }
             }
         }
+
+        if is_vec(&idents_path.as_str()) {
+            // 是 Vec
+            if let Some(p) = p.path.segments.first() {
+                if let syn::PathArguments::AngleBracketed(ref params) = p.arguments {
+                    if let syn::GenericArgument::Type(ref ty_gen) = params.args.first().unwrap() {
+                        // 解析泛型
+                        // 继续下一层解析
+                        let (option_count, path, _, _) = parse_type_options(ty_gen);
+                        if path == "u8" {
+                            // Vec<u8>
+                            return (option_count, "Vec<u8>".to_string(), ty, true);
+                        }
+                    }
+                }
+            }
+        }
+
         // 不是 Option
-        return (0, idents_path, ty);
+        return (0, idents_path, ty, false);
     }
 
     panic!("无法解析类型")

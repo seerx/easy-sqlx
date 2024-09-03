@@ -25,7 +25,7 @@ fn create_condition_func(
                 let op = easy_sqlx_core::sql::dialects::condition::Operator::resolve(#oper.to_string());
                 easy_sqlx_core::sql::dialects::condition::Condition::Condition(pair, op)
             }
-        }
+        };
     }
     quote! {
         pub fn #in_name(val: #syn_type) -> easy_sqlx_core::sql::dialects::condition::Condition {
@@ -44,6 +44,7 @@ pub fn create_conditions(
     field: &Field,
     syn_type: &Type,
     rust_type: String,
+    is_vec: bool,
 ) -> Vec<proc_macro2::TokenStream> {
     let field_name = proc_macro2::Ident::new(col.name.as_str(), proc_macro2::Span::call_site()); // &col.name;
     let col_name = &col.get_column_name();
@@ -53,15 +54,18 @@ pub fn create_conditions(
 
     // in 操作
     let in_name = syn::Ident::new(format!("{}_in", &field_name).as_str(), Span::call_site());
-    conditions.push(quote! {
-        pub fn #in_name(val: Vec<#syn_type>) -> easy_sqlx_core::sql::dialects::condition::Condition {
-            let pair = easy_sqlx_core::sql::utils::pair::Pair {
-                name: #col_name.to_string(),
-                value: easy_sqlx_core::sql::utils::value::Value::from(val)
-            };
-            easy_sqlx_core::sql::dialects::condition::Condition::Condition(pair, easy_sqlx_core::sql::dialects::condition::Operator::In)
-        }
-    });
+
+    if !is_vec {
+        conditions.push(quote! {
+            pub fn #in_name(val: Vec<#syn_type>) -> easy_sqlx_core::sql::dialects::condition::Condition {
+                let pair = easy_sqlx_core::sql::utils::pair::Pair {
+                    name: #col_name.to_string(),
+                    value: easy_sqlx_core::sql::utils::value::Value::from(val)
+                };
+                easy_sqlx_core::sql::dialects::condition::Condition::Condition(pair, easy_sqlx_core::sql::dialects::condition::Operator::In)
+            }
+        });
+    }
 
     conditions.push(create_condition_func(
         &col_name,

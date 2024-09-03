@@ -17,6 +17,7 @@ struct Col {
     pub is_nullable: String,
     pub data_type: String,
     pub character_maximum_length: Option<i32>,
+    pub datetime_precision: Option<i32>,
     pub primarykey: bool,
     // pub uniquekey: bool,
 }
@@ -49,6 +50,12 @@ impl Col {
                         } else {
                             None
                         },
+                    }
+                } else if let Some(precision) = self.datetime_precision {
+                    SqlType {
+                        name: name.to_string(),
+                        len: Some(precision as isize),
+                        ..Default::default()
                     }
                 } else {
                     SqlType {
@@ -102,7 +109,7 @@ where
     for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
     for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
 {
-    let sql: &str = r#"SELECT column_name, column_default, is_nullable, data_type, character_maximum_length,
+    let sql: &str = r#"SELECT column_name, column_default, is_nullable, data_type, character_maximum_length, datetime_precision,
             CASE WHEN p.contype = 'p' THEN true ELSE false END AS primarykey,
             CASE WHEN p.contype = 'u' THEN true ELSE false END AS uniquekey
         FROM pg_attribute f

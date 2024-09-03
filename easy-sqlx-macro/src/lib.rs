@@ -69,7 +69,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     {
         for field in fields {
             match parse_column_attrs(&field) {
-                Ok((col, rust_type, syn_type)) => {
+                Ok((col, rust_type, syn_type, is_vec)) => {
                     if let Some(column) = col {
                         if let Some(rust_type) = rust_type {
                             if let Some(syn_type) = syn_type {
@@ -90,11 +90,11 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                                 });
 
                                 // 生成列函数
-                                let wrappers = create_field_wrapper(&column, &field, syn_type);
+                                let wrappers = create_field_wrapper(&column, &field, syn_type, is_vec);
                                 col_wrapper_methods.extend(wrappers);
 
                                 // 生成条件属性函数
-                                let conds = create_conditions(&column, &field, syn_type, rust_type);
+                                let conds = create_conditions(&column, &field, syn_type, rust_type, is_vec);
                                 col_conditions.extend(conds);
 
                                 // 主键
