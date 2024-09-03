@@ -365,6 +365,22 @@ where
         self.ctx.quoter.clone()
     }
     
+    fn sql_delete(&self, table: &TableSchema, wh: Option<Where>) -> String {
+        let mut where_str = String::from("");
+        if let Some(w) = wh {
+            let (ws, _) = w.sql(1, &self.quoter());
+            if !ws.is_empty() { 
+                where_str.push_str(" where ");
+                where_str.push_str(&ws);
+            }
+        }
+
+        format!(
+            "delete from {} {where_str}",
+            self.ctx.quote(&self.table_name_with_schema(table))
+        )
+    }
+    
     // async fn execute_sql<'c, E>(
     //     &self,
     //     conn: E,

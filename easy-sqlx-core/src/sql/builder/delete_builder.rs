@@ -1,26 +1,26 @@
 use crate::sql::{
-    dialects::{condition::{Condition, Where, WhereAppend}, schema::{self, schema::Schema}},
+    dialects::{
+        condition::{Condition, Where, WhereAppend},
+        schema::{self, schema::Schema},
+    },
     schema::table::TableSchema,
-    utils::pair::Pair,
 };
 
-use sqlx::{Database, Execute as _};
 use super::builder::Builder;
+use sqlx::{Database, Execute as _};
 
 #[derive(Debug)]
-pub struct UpdateBuilder<'a> {
+pub struct DeleteBuilder<'a> {
     table: TableSchema,
     default_schema: &'a str,
-    columns: Vec<Pair>,
     wh: Option<Where>,
 }
 
-impl<'a> UpdateBuilder<'a> {
+impl<'a> DeleteBuilder<'a> {
     pub fn new(table: TableSchema) -> Self {
         Self {
             table,
             default_schema: "",
-            columns: vec![],
             wh: None,
         }
     }
@@ -29,14 +29,8 @@ impl<'a> UpdateBuilder<'a> {
         self.default_schema = schema;
         self
     }
-
-    pub fn set_column(mut self, pair: Pair) -> Self {
-        self.columns.push(pair);
-        // self.r#where()
-        self
-    }
 }
-impl<'a> WhereAppend<Condition> for UpdateBuilder<'a> {
+impl<'a> WhereAppend<Condition> for DeleteBuilder<'a> {
     fn and(mut self, cond: Condition) -> Self {
         if let Some(w) = self.wh {
             self.wh = Some(w.and(cond));
@@ -56,7 +50,7 @@ impl<'a> WhereAppend<Condition> for UpdateBuilder<'a> {
     }
 }
 
-impl<'a> WhereAppend<Where> for UpdateBuilder<'a> {
+impl<'a> WhereAppend<Where> for DeleteBuilder<'a> {
     fn and(mut self, wh: Where) -> Self {
         if let Some(w) = self.wh {
             self.wh = Some(w.and(wh));
@@ -79,7 +73,7 @@ impl<'a> WhereAppend<Where> for UpdateBuilder<'a> {
 #[cfg(feature = "postgres")]
 use sqlx::Postgres;
 
-impl<'a> Builder for UpdateBuilder<'a> {
+impl<'a> Builder for DeleteBuilder<'a> {
     #[cfg(feature = "postgres")]
     type DB = Postgres;
 
@@ -91,26 +85,12 @@ impl<'a> Builder for UpdateBuilder<'a> {
         for<'e> &'e mut C: sqlx::Executor<'e, Database = Self::DB>,
     {
         let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
-        
-        let cols: Vec<String> = self.columns.iter().map(|c| c.name.to_string()).collect();
-        let sql = schema.sql_update_columns(&self.table, &cols, self.wh.clone());
-        // if let Some(w) = &self.wh {
-        //     let (ws, _) = w.sql(self.columns.len() + 1, &schema.quoter());
-        //     if !ws.is_empty() { 
-        //         sql.push_str(" where ");
-        //         sql.push_str(&ws);
-        //     }
-        // }
 
-        // tracing::info!("easy-sqlx: {}", &sql);
-        // let w_sql = self.wh
+        let sql = schema.sql_delete(&self.table, self.wh.clone());
+
         let mut query: sqlx::query::Query<'_, Self::DB, <Self::DB as Database>::Arguments<'_>> =
             sqlx::query::<Self::DB>(&sql);
 
-        for col in &self.columns {
-            query = col.bind_to_query(query);
-        }
-        
         if let Some(w) = &self.wh {
             query = w.bind_to_query(query);
         }

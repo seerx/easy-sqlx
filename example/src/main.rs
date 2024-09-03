@@ -56,7 +56,7 @@ async fn main() {
         .unwrap();
 
     let user = User {
-        id: 8,
+        id: 10,
         name: "777".to_string(),
         create_time: Some(Local::now().naive_local()),
         ..Default::default()
@@ -75,6 +75,9 @@ async fn main() {
         .execute(&mut conn)
         .await
         .unwrap();
+
+    user.delete().execute(&mut conn).await.unwrap();
+    User::build_delete().execute(&mut conn).await.unwrap();
 
     // let update = User::build_update();
     // update.and(User::id_eq(100));
