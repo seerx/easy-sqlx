@@ -1,7 +1,10 @@
 // use easy_sqlx::Table;
 
-use easy_sqlx::{sync_tables, Table}; 
-use easy_sqlx_core::sql::{builder::builder::Builder as _, dialects::condition::{Condition, Operator}};
+use easy_sqlx::{sync_tables, Table};
+use easy_sqlx_core::sql::{
+    builder::builder::Builder as _,
+    dialects::condition::{Condition, Operator, Where},
+};
 // use easy_sqlx_core::sql::builder::insert_builder::InsertBuilder;
 use sqlx::{postgres::PgConnectOptions, Connection, PgConnection};
 
@@ -38,9 +41,6 @@ impl User {
 
 #[tokio::main]
 async fn main() {
-    
-
-
     let binding = PgConnectOptions::new()
         .host("127.0.0.1")
         .database("prjmgr")
@@ -67,11 +67,13 @@ async fn main() {
     //     .await
     //     .unwrap();
 
-    let cond = Condition::And(
-        Box::new(Condition::Condition(User::id(100), Operator::In)), 
-        Box::new(Condition::Condition(User::id(200), Operator::Le)));
+    // let cond = Condition::And(
+    //     Box::new(Condition::Condition(User::id(100), Operator::In)),
+    //     Box::new(Condition::Condition(User::id(200), Operator::Le)));
+
+    let w = Where::new().and_in(User::id_array(vec![100, 200])).and_le(User::id(200));
     // let cond = Condition::Condition(User::id(100), Operator::Ge);
-    let (sql, _) = cond.to_sql(1);
+    let (sql, _) = w.sql(1);
     println!("{sql}");
     // User::create_time(val);
     // User::cre

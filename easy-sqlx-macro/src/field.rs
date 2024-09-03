@@ -22,6 +22,15 @@ pub fn create_field_wrapper(
     //     }
     // });
 
+    let array_pair = syn::Ident::new(format!("{}_array", &field_name).as_str(), Span::call_site());
+    wrappers.push(quote! {
+        pub fn #array_pair(val: Vec<#syn_type>) -> easy_sqlx_core::sql::utils::pair::Pair {
+            easy_sqlx_core::sql::utils::pair::Pair {
+                name: #col_name.to_string(),
+                value: easy_sqlx_core::sql::utils::value::Value::from(val)
+            }
+        }
+    });
     if col.nullable {
         wrappers.push(quote! {
             pub fn #field_name(val: #syn_type) -> easy_sqlx_core::sql::utils::pair::Pair {
