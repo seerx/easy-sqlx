@@ -1,10 +1,7 @@
 // use easy_sqlx::Table;
 
 use easy_sqlx::{sync_tables, Table};
-use easy_sqlx_core::sql::{
-    builder::builder::Builder as _,
-    dialects::condition::{Condition, Operator, Where},
-};
+use easy_sqlx_core::sql::dialects::condition::{Where, WhereAppend};
 // use easy_sqlx_core::sql::builder::insert_builder::InsertBuilder;
 use sqlx::{postgres::PgConnectOptions, Connection, PgConnection};
 
@@ -16,6 +13,7 @@ pub struct User {
     #[col(len = 30)]
     pub name: String,
     pub create_time: Option<chrono::NaiveDateTime>,
+    // pub blob: Vec<u8>,
 }
 
 impl User {
@@ -70,9 +68,18 @@ async fn main() {
     // let cond = Condition::And(
     //     Box::new(Condition::Condition(User::id(100), Operator::In)),
     //     Box::new(Condition::Condition(User::id(200), Operator::Le)));
+    // User::id_in(val)
 
-    let w = Where::new().and_in(User::id_array(vec![100, 200])).and_le(User::id(200));
+    let w1 = Where::new(User::id_ge(100));
+
+    let w = Where::new(User::id_in(vec![100, 200]))
+        .or(User::id_eq(200))
+        .and(User::create_time_is_null())
+        .and(w1);
+    // .and(w);
     // let cond = Condition::Condition(User::id(100), Operator::Ge);
+    // User::name_eq(100);
+    // User::id_neq(val)
     let (sql, _) = w.sql(1);
     println!("{sql}");
     // User::create_time(val);

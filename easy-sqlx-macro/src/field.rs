@@ -40,7 +40,7 @@ pub fn create_field_wrapper(
                 }
             }
         });
-        let fd2 = syn::Ident::new(format!("{}2", &field_name).as_str(), Span::call_site());
+        let fd2 = syn::Ident::new(format!("{}_opt", &field_name).as_str(), Span::call_site());
         wrappers.push(quote! {
             pub fn #fd2(val: #ty) -> easy_sqlx_core::sql::utils::pair::Pair {
                 easy_sqlx_core::sql::utils::pair::Pair {

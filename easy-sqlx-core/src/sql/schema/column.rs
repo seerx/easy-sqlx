@@ -10,7 +10,7 @@ use super::types::types::SqlType;
 pub struct Column {
     /// 结构体字段名称
     pub name: String,
-    /// RUST 数据类型
+    
 
     /// 数据库字段名称
     pub column: Option<String>,

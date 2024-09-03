@@ -2,7 +2,7 @@ use easy_sqlx_core::sql::schema::{column::Column, types::types::SqlType};
 use easy_sqlx_utils::option_parser::parse_type_options;
 use syn::{spanned::Spanned, Error, Field, Type};
 
-pub fn parse_column_attrs(field: &Field) -> syn::Result<(Option<Column>, Option<&Type>)> {
+pub fn parse_column_attrs(field: &Field) -> syn::Result<(Option<Column>, Option<String>, Option<&Type>)> {
     // let attr
     // Type::Path(TypePath::from("".to_string()))
     let ident_item = &field.ident;
@@ -29,7 +29,7 @@ pub fn parse_column_attrs(field: &Field) -> syn::Result<(Option<Column>, Option<
                 Ok(col) => {
                     if col.ignore {
                         // 忽略该字段
-                        return Ok((None, None));
+                        return Ok((None, None, None));
                     }
 
                     if rust_type == "String" {
@@ -59,7 +59,7 @@ pub fn parse_column_attrs(field: &Field) -> syn::Result<(Option<Column>, Option<
         }
     }
  
-    Ok((Some(column), Some(syn_type)))
+    Ok((Some(column), Some(rust_type), Some(syn_type)))
 }
 
 #[derive(Debug, Eq, PartialEq)]

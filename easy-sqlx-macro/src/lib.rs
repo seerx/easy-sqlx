@@ -1,3 +1,4 @@
+use condition::create_conditions;
 use field::create_field_wrapper;
 use heck::ToSnakeCase;
 use insert::{create_insert, create_insert_builder};
@@ -6,6 +7,7 @@ use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
 mod attrs;
+mod condition;
 mod field;
 mod insert;
 
@@ -52,6 +54,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     // 列属性函数
     let mut col_wrapper_methods: Vec<proc_macro2::TokenStream> = Vec::new();
+    // 条件属性函数
+    let mut col_conditions: Vec<proc_macro2::TokenStream> = Vec::new();
 
     let mut keys = vec![];
 
@@ -63,41 +67,47 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     {
         for field in fields {
             match parse_column_attrs(&field) {
-                Ok((col, syn_type)) => {
+                Ok((col, rust_type, syn_type)) => {
                     if let Some(column) = col {
-                        if let Some(syn_type) = syn_type {
-                            let field_name = &column.name;
-                            // 生成列方法名称
-                            let fn_name = syn::Ident::new(
-                                format!("col_{}_name", &field_name).as_str(),
-                                Span::call_site(),
-                            );
-                            let col_name = column.get_column_name();
-                            col_names.push(col_name.clone());
-                            // 添加列方法
-                            col_name_methods.push(quote! {
-                                /// #col_name 列名称
-                                pub fn #fn_name() -> &'static str {
-                                    #col_name
+                        if let Some(rust_type) = rust_type {
+                            if let Some(syn_type) = syn_type {
+                                let field_name = &column.name;
+                                // 生成列方法名称
+                                let fn_name = syn::Ident::new(
+                                    format!("col_{}", &field_name).as_str(),
+                                    Span::call_site(),
+                                );
+                                let col_name = column.get_column_name();
+                                col_names.push(col_name.clone());
+                                // 添加列方法
+                                col_name_methods.push(quote! {
+                                    /// #col_name 列名称
+                                    pub fn #fn_name() -> &'static str {
+                                        #col_name
+                                    }
+                                });
+
+                                // 生成列函数
+                                let wrappers = create_field_wrapper(&column, &field, syn_type);
+                                col_wrapper_methods.extend(wrappers);
+
+                                // 生成条件属性函数
+                                let conds = create_conditions(&column, &field, syn_type, rust_type);
+                                col_conditions.extend(conds);
+
+                                // 主键
+                                if column.pk {
+                                    keys.push(field);
                                 }
-                            });
 
-                            // 生成列函数
-                            let wrappers = create_field_wrapper(&column, &field, syn_type);
-                            col_wrapper_methods.extend(wrappers);
+                                // let self_dot_name = syn::Ident::new(
+                                //     format!("$self.{}", &column.name).as_str(),
+                                //     Span::call_site(),
+                                // );
 
-                            // 主键
-                            if column.pk {
-                                keys.push(field);
+                                // 添加列
+                                cols.push(column);
                             }
-
-                            // let self_dot_name = syn::Ident::new(
-                            //     format!("$self.{}", &column.name).as_str(),
-                            //     Span::call_site(),
-                            // );
-
-                            // 添加列
-                            cols.push(column);
                         }
                     }
                 }
@@ -154,6 +164,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             #build_insert
 
             #(#col_wrapper_methods) *
+
+            #(#col_conditions) *
             // fn columns() -> Vec<easy_sqlx_core::sql::schema::column::Column> {
             //     [#(#cols), *].to_vec()
             // }
