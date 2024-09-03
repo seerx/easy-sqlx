@@ -1,4 +1,8 @@
-use crate::sql::{dialects::condition::Where, schema::table::TableSchema, utils::pair::Pair};
+use crate::sql::{
+    dialects::{condition::{Condition, Where, WhereAppend}, schema::{self, schema::Schema}},
+    schema::table::TableSchema,
+    utils::pair::Pair,
+};
 
 use super::builder::Builder;
 
@@ -27,10 +31,51 @@ impl<'a> UpdateBuilder<'a> {
 
     pub fn set_column(mut self, pair: Pair) -> Self {
         self.columns.push(pair);
+        // self.r#where()
+        self
+    }
+}
+impl<'a> WhereAppend<Condition> for UpdateBuilder<'a> {
+    fn and(mut self, cond: Condition) -> Self {
+        if let Some(w) = self.wh {
+            self.wh = Some(w.and(cond));
+        } else {
+            self.wh = Some(Where::new(cond));
+        }
+        self
+    }
+
+    fn or(mut self, cond: Condition) -> Self {
+        if let Some(w) = self.wh {
+            self.wh = Some(w.or(cond));
+        } else {
+            self.wh = Some(Where::new(cond));
+        }
         self
     }
 }
 
+impl<'a> WhereAppend<Where> for UpdateBuilder<'a> {
+    fn and(mut self, wh: Where) -> Self {
+        if let Some(w) = self.wh {
+            self.wh = Some(w.and(wh));
+        } else {
+            self.wh = Some(wh);
+        }
+        self
+    }
+
+    fn or(mut self, wh: Where) -> Self {
+        if let Some(w) = self.wh {
+            self.wh = Some(w.or(wh));
+        } else {
+            self.wh = Some(wh);
+        }
+        self
+    }
+}
+
+use sqlx::{Database, Execute as _};
 #[cfg(feature = "postgres")]
 use sqlx::Postgres;
 impl<'a> Builder for UpdateBuilder<'a> {
@@ -44,6 +89,30 @@ impl<'a> Builder for UpdateBuilder<'a> {
     where
         for<'e> &'e mut C: sqlx::Executor<'e, Database = Self::DB>,
     {
-        todo!()
+        let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
+        let cols: Vec<String> = self.columns.iter().map(|c| c.name.to_string()).collect();
+        let mut sql = schema.sql_update_columns(&self.table, &cols);
+        if let Some(w) = &self.wh {
+            let (ws, _) = w.sql(self.columns.len());
+            if !ws.is_empty() { 
+                sql.push_str(" where ");
+                sql.push_str(&ws);
+            }
+        }
+        // let w_sql = self.wh
+        let mut query: sqlx::query::Query<'_, Self::DB, <Self::DB as Database>::Arguments<'_>> =
+            sqlx::query::<Self::DB>(&sql);
+
+        for col in &self.columns {
+            query = col.bind_to_query(query);
+        }
+        
+        if let Some(w) = &self.wh {
+            query = w.bind_to_query(query);
+        }
+
+        tracing::debug!("easy-sqlx: {}", query.sql());
+
+        query.execute(conn).await
     }
 }

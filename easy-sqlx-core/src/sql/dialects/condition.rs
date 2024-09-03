@@ -279,6 +279,17 @@ impl Where {
         }
     }
 
+    #[cfg(feature = "postgres")]
+    pub fn bind_to_query<'a>(
+        &self,
+        query: sqlx::query::Query<'a, Postgres, PgArguments>,
+    ) -> sqlx::query::Query<'a, Postgres, PgArguments> {
+        if let Some(c) = &self.cond {
+            return c.bind_to_query(query)
+        }
+        query
+    }
+
     // pub fn and_is(self, p: Pair) -> Self {
     //     self.and_operator(p, Operator::IsNull)
     // }

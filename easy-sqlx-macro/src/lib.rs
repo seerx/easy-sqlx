@@ -10,6 +10,7 @@ mod attrs;
 mod condition;
 mod field;
 mod insert;
+mod update;
 
 use attrs::{column::parse_column_attrs, table::parse_table_attrs};
 

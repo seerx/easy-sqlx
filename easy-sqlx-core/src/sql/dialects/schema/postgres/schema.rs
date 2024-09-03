@@ -334,6 +334,24 @@ where
         )
     }
 
+    fn sql_update_columns(&self, table: &TableSchema, cols: &Vec<String>) -> String {
+        let mut columns = "".to_string();
+
+        for (n, col) in cols.iter().enumerate() {
+            if n > 0 {
+                columns.push_str(",");
+            }
+            columns.push_str(self.ctx.quote(&col).as_str());
+            columns.push_str("=");
+            columns.push_str(format!("${}", n + 1).as_str());
+        }
+
+        format!(
+            "update {} {columns}",
+            self.ctx.quote(&self.table_name_with_schema(table))
+        )
+    }
+    
     // async fn execute_sql<'c, E>(
     //     &self,
     //     conn: E,
