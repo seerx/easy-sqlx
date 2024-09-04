@@ -9,8 +9,9 @@ use tracing::Level;
 use tracing_subscriber::{
     filter::filter_fn, layer::SubscriberExt, util::SubscriberInitExt, Layer as _, Registry,
 };
+use easy_sqlx::WhereAppend;
 
-#[derive(Table, Default, Debug, FromRow, Clone)]
+#[derive(Table, Default, Debug, Clone, FromRow)]
 #[index(columns("abc"))]
 #[table(recreate = "now")]
 pub struct User {

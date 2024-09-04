@@ -27,6 +27,8 @@ easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
 定义表结构 #[derive(Table)]
 
 ```
+use easy_sqlx::WhereAppend; // 引用 WhereAppend
+
 #[derive(Table, FromRow, Debug)]
 #[table(
     indexes [
