@@ -26,7 +26,7 @@ pub fn create_update(table: &TableSchema, entity: &Ident) -> proc_macro2::TokenS
         if col.nullable {
             update_args.push(quote! {
                 // let #this = self;
-                builder = builder.set_column(easy_sqlx_core::sql::utils::pair::Pair {
+                builder = builder.set(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(self.#field_name.clone()),
                 });
@@ -34,7 +34,7 @@ pub fn create_update(table: &TableSchema, entity: &Ident) -> proc_macro2::TokenS
         } else {
             update_args.push(quote! {
                 // let #this = self;
-                builder = builder.set_column(easy_sqlx_core::sql::utils::pair::Pair {
+                builder = builder.set(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(&self.#field_name.clone()),
                 });

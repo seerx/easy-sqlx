@@ -29,7 +29,7 @@ impl<'a> InsertBuilder<'a> {
         self
     }
 
-    pub fn set_column(mut self, pair: Pair)-> Self {
+    pub fn set(mut self, pair: Pair)-> Self {
         self.columns.push(pair);
         self
     }

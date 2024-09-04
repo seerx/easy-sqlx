@@ -83,9 +83,9 @@ async fn main() {
     // println!("{:?}", a);
 
     User::build_insert()
-        .set_column(User::id(14))
-        .set_column(User::name("abc".to_string()))
-        .set_column(User::blob(vec![]))
+        .set(User::id(14))
+        .set(User::name("abc".to_string()))
+        .set(User::blob(vec![]))
         .execute(&mut conn)
         .await
         .unwrap();
@@ -106,7 +106,7 @@ async fn main() {
     user.update().execute(&mut conn).await.unwrap();
 
     User::build_update()
-        .set_column(User::name("007".to_string()))
+        .set(User::name("007".to_string()))
         .and(User::id_eq(7))
         .and(User::name_eq("007".to_string()))
         .execute(&mut conn)

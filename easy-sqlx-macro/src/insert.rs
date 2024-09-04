@@ -12,7 +12,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
         if col.nullable {
             insert_bind_args.push(quote! {
                 // let #this = self;
-                builder = builder.set_column(easy_sqlx_core::sql::utils::pair::Pair {
+                builder = builder.set(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(self.#field_name),
                 });
@@ -20,7 +20,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
         } else {
             insert_bind_args.push(quote! {
                 // let #this = self;
-                builder = builder.set_column(easy_sqlx_core::sql::utils::pair::Pair {
+                builder = builder.set(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
                     value: easy_sqlx_core::sql::utils::value::Value::from(&self.#field_name),
                 });

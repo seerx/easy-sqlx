@@ -95,7 +95,7 @@ user.insert().execute(&mut conn).await.unwrap();
 
 ```
 User::build_insert()
-    .set_column(User::id(2)) // 设置字段值，未设置的为 null
+    .set(User::id(2)) // 设置字段值，未设置的为 null
     .execute(&mut conn)
     .await
     .unwrap();
@@ -116,7 +116,7 @@ user.update().execute(&mut conn).await.unwrap();
 
 ```
 User::build_update()
-        .set_column(User::name("007".to_string()))
+        .set(User::name("007".to_string()))
         .and(User::id_eq(2))
         .execute(&mut conn)
         .await
