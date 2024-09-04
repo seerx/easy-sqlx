@@ -381,6 +381,26 @@ where
         )
     }
     
+    fn sql_select(&self, table: &TableSchema, columns: &Vec<String>, wh: Option<Where>) -> String {
+
+        let cols: Vec<String> = columns.iter().map(|c| self.quoter().quote(c)).collect();
+
+        let mut where_str = String::from("");
+        if let Some(w) = wh {
+            let (ws, _) = w.sql(1, &self.quoter());
+            if !ws.is_empty() { 
+                where_str.push_str(" where ");
+                where_str.push_str(&ws);
+            }
+        }
+
+        format!(
+            "select {} from {} {where_str}",
+            cols.join(","),
+            self.ctx.quote(&self.table_name_with_schema(table))
+        )
+    }
+    
     // async fn execute_sql<'c, E>(
     //     &self,
     //     conn: E,

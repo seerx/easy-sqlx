@@ -6,7 +6,7 @@ use crate::sql::{
     utils::pair::Pair,
 };
 
-use super::builder::Builder;
+use super::builder::ExecuteBuilder;
 
 #[derive(Debug)]
 pub struct InsertBuilder<'a> {
@@ -35,7 +35,7 @@ impl<'a> InsertBuilder<'a> {
     }
 }
 
-impl<'a> Builder for InsertBuilder<'a>
+impl<'a> ExecuteBuilder for InsertBuilder<'a>
 // <DB as sqlx::Database>::Arguments<'a>: IntoArguments<'a, DB>,
 {
     #[cfg(feature = "postgres")]

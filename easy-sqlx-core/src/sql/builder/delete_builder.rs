@@ -6,7 +6,7 @@ use crate::sql::{
     schema::table::TableSchema,
 };
 
-use super::builder::Builder;
+use super::builder::ExecuteBuilder;
 use sqlx::{Database, Execute as _};
 
 #[derive(Debug)]
@@ -73,7 +73,7 @@ impl<'a> WhereAppend<Where> for DeleteBuilder<'a> {
 #[cfg(feature = "postgres")]
 use sqlx::Postgres;
 
-impl<'a> Builder for DeleteBuilder<'a> {
+impl<'a> ExecuteBuilder for DeleteBuilder<'a> {
     #[cfg(feature = "postgres")]
     type DB = Postgres;
 

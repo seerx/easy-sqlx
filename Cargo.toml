@@ -50,6 +50,8 @@ sqlx-core = { version = "0" }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" } # , features = ["env-filter"] }
 
+futures = "^0.3"
+
 easy-sqlx-core = { path = "./easy-sqlx-core", features=["postgres", "chrono"] }
 easy-sqlx-macro = { path = "./easy-sqlx-macro" }
 

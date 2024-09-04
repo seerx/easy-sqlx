@@ -63,4 +63,6 @@ where
     fn sql_update_columns(&self, table: &TableSchema, cols: &Vec<String>, wh: Option<Where>) -> String; 
 
     fn sql_delete(&self, table: &TableSchema, wh: Option<Where>) -> String; 
+
+    fn sql_select(&self, table: &TableSchema, columns: &Vec<String>, wh: Option<Where>) -> String; 
 }

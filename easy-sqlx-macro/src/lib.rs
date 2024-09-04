@@ -5,6 +5,7 @@ use heck::ToSnakeCase;
 use insert::{create_insert, create_insert_builder};
 use proc_macro2::Span;
 use quote::quote;
+use select::create_select_builder;
 use syn::{parse_macro_input, DeriveInput};
 
 mod attrs;
@@ -13,6 +14,7 @@ mod field;
 mod insert;
 mod update;
 mod delete;
+mod select;
 
 use attrs::{column::parse_column_attrs, table::parse_table_attrs};
 use update::{create_update, create_update_builder};
@@ -150,6 +152,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let delete = create_delete(&table, &ident);
     let build_delete = create_delete_builder();
 
+    // let build_select = create_select_builder();
+
     // 实现 comment 方法
     let output = quote! {
         impl #ident {
@@ -178,6 +182,8 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
             #delete
             #build_delete
+
+            // #build_select
 
             #(#col_wrapper_methods) *
 

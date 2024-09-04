@@ -3,7 +3,7 @@
 use chrono::Local;
 use easy_sqlx::{sync_tables, Table};
 use easy_sqlx_core::sql::{
-    builder::builder::Builder,
+    builder::builder::{ExecuteBuilder, QueryBuilder},
     dialects::condition::{Where, WhereAppend},
 };
 // use easy_sqlx_core::sql::builder::insert_builder::InsertBuilder;
@@ -72,6 +72,19 @@ async fn main() {
 
     let a = user.update();
     a.execute(&mut conn).await.unwrap();
+
+    
+
+    // let a = User::build_select()
+    //     .columns(vec![
+    //         User::col_id().to_string(),
+    //         User::col_name().to_string(),
+    //     ])
+    //     .and(User::id_eq(11))
+    //     .query().fetch(executor)
+    //     .execute(&mut conn)
+    //     .await.unwrap();
+    
 
     User::build_update()
         .set_column(User::name("007".to_string()))

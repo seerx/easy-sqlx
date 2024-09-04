@@ -23,6 +23,8 @@ syn = { workspace = true, features = ["full"] }
 quote.workspace = true
 proc-macro2.workspace = true
 
+futures.workspace = true
+
 sqlx.workspace = true
 sqlx-core.workspace = true
 # sqlx-postgres.workspace = true

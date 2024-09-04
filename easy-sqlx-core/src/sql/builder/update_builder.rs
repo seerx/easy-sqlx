@@ -5,7 +5,7 @@ use crate::sql::{
 };
 
 use sqlx::{Database, Execute as _};
-use super::builder::Builder;
+use super::builder::ExecuteBuilder;
 
 #[derive(Debug)]
 pub struct UpdateBuilder<'a> {
@@ -79,7 +79,7 @@ impl<'a> WhereAppend<Where> for UpdateBuilder<'a> {
 #[cfg(feature = "postgres")]
 use sqlx::Postgres;
 
-impl<'a> Builder for UpdateBuilder<'a> {
+impl<'a> ExecuteBuilder for UpdateBuilder<'a> {
     #[cfg(feature = "postgres")]
     type DB = Postgres;
 
