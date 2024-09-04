@@ -2,10 +2,7 @@
 
 use chrono::Local;
 use easy_sqlx::{sync_tables, Table};
-use easy_sqlx_core::sql::{
-    builder::builder::{ExecuteBuilder, QueryBuilder},
-    dialects::condition::{Where, WhereAppend},
-};
+use easy_sqlx_core::sql::builder::builder::{ExecuteBuilder, QueryBuilder};
 // use easy_sqlx_core::sql::builder::insert_builder::InsertBuilder;
 use sqlx::{postgres::PgConnectOptions, Connection, FromRow, PgConnection};
 use tracing::Level;
