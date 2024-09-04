@@ -2,7 +2,7 @@
 
 #### 介绍
 
-根据结构体定义同步生成数据库表结构，当前仅支持 postgres 数据库。
+根据结构体定义同步生成数据库表结构，简化增删改操作和大部分的单表查询操作，当前仅支持 postgres 数据库。
 
 #### 要求
 
@@ -32,7 +32,7 @@ easy-sqlx = { git = "https://gitee.com/knowgo/easy-sqlx.git" }
 struct Table1 {
     #[col(column = "key", comment = "123")]
     #[col(pk, autoincr, len = 100)]
-    pub id: String,
+    pub id: i64,
     #[col(comment = "姓名", len = 20)]
     pub name: Option<String>,
     #[col(ignore)]
@@ -43,6 +43,7 @@ struct Table1 {
 ```
 sync_tables(connection, vec![Table1::table()], None).await?;
 ```
+<pre>
 table 属性
     name            表名称
     comment         注释
@@ -69,13 +70,13 @@ col 属性
     default         默认值
     from            从另一个字段重命名而来
     replace         如果修改数据类型发生错误时，删除原字段，重新创建
-
+</pre>
 
 ##### 添加记录 1
 ```
 let table = Table1 {
-    id: "test001".to_string(),
-    name: "test".to_string(), 
+    id: 1,
+    name: Some("test".to_string()), 
     ..Default::default()
 };
 // 增加完整记录
@@ -85,7 +86,7 @@ table.insert().execute(&mut conn).await.unwrap();
 ##### 添加记录 2
 ```
 Table1::build_insert()
-    .set_column(Table1::id("11".to_string()))
+    .set_column(Table1::id(2))
     .execute(&mut conn)
     .await
     .unwrap();
