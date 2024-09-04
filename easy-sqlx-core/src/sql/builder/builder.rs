@@ -17,16 +17,16 @@ pub trait ExecuteBuilder {
 
 pub trait QueryBuilder<'a> {
     type DB: Database;
-
-    fn fetch_one<'e, 'c: 'e, E, O>(self, executor: E) -> impl Future<Output = Result<O, Error>>
+    /// 获取一条记录
+    fn one<'e, 'c: 'e, E, O>(self, executor: E) -> impl Future<Output = Result<O, Error>>
     where
         E: 'e + Executor<'c, Database = Self::DB>,
         O: 'e,
         for<'r> O: FromRow<'r, <Self::DB as Database>::Row>,
         O: std::marker::Send,
         O: Unpin;
-
-    fn fetch_optional<'e, 'c: 'e, E, O>(
+    /// 获取一条记录，如果不存在返回 None
+    fn optional<'e, 'c: 'e, E, O>(
         self,
         executor: E,
     ) -> impl Future<Output = Result<Option<O>, Error>>
@@ -38,10 +38,8 @@ pub trait QueryBuilder<'a> {
         O: std::marker::Send,
         O: Unpin;
 
-    fn fetch_all<'e, 'c: 'e, E, O>(
-        self,
-        executor: E,
-    ) -> impl Future<Output = Result<Vec<O>, Error>>
+    /// 获取全部记录
+    fn all<'e, 'c: 'e, E, O>(self, executor: E) -> impl Future<Output = Result<Vec<O>, Error>>
     where
         // 'q: 'e,
         E: 'e + Executor<'c, Database = Self::DB>,
@@ -50,7 +48,8 @@ pub trait QueryBuilder<'a> {
         O: std::marker::Send,
         O: Unpin;
 
-    fn fetch_page<'e, 'c: 'e, E, O>(
+    /// 分页查询
+    fn page<'e, 'c: 'e, E, O>(
         &self,
         executor: E,
         page: &PageRequest,
@@ -63,11 +62,13 @@ pub trait QueryBuilder<'a> {
         O: std::marker::Send,
         O: Unpin;
 
+    /// 查询记录数
     fn count<'c, E>(&self, executor: E) -> impl Future<Output = Result<usize, Error>>
     where
         E: 'c + Executor<'c, Database = Self::DB>;
 
-    fn fetch_one_scalar<'q, 'c, E, O>(
+    /// 获取一个标量
+    fn one_scalar<'q, 'c, E, O>(
         &self,
         executor: E,
         field: &'q str,
@@ -76,8 +77,8 @@ pub trait QueryBuilder<'a> {
         (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
         E: 'c + Executor<'c, Database = Self::DB>,
         O: Send + Unpin;
-
-    fn fetch_option_scalar<'q, 'c, E, O>(
+    /// 获取一个可选标量，如果不存在返回 None
+    fn optional_scalar<'q, 'c, E, O>(
         &self,
         executor: E,
         field: &'q str,
@@ -86,8 +87,8 @@ pub trait QueryBuilder<'a> {
         (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
         E: 'c + Executor<'c, Database = Self::DB>,
         O: Send + Unpin;
-
-    fn fetch_all_scalars<'q, 'c, E, O>(
+    /// 获取全部标量
+    fn all_scalars<'q, 'c, E, O>(
         &self,
         executor: E,
         field: &'q str,
@@ -96,5 +97,16 @@ pub trait QueryBuilder<'a> {
         (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
         E: 'c + Executor<'c, Database = Self::DB>,
         O: Send + Unpin;
-    // A: 'e,
+
+    /// 分页获取标量
+    fn page_scalars<'e, 'c: 'e, E, O>(
+        &self,
+        executor: E,
+        field: &'c str,
+        page: &PageRequest,
+    ) -> impl Future<Output = Result<PageResult<O>, Error>>
+    where
+        (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
+        E: 'e + Executor<'c, Database = Self::DB> + 'c + Copy,
+        O: Send + Unpin;
 }

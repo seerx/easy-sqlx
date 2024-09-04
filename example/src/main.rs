@@ -4,7 +4,7 @@ use chrono::Local;
 use easy_sqlx::{sync_tables, Table};
 use easy_sqlx_core::sql::{
     builder::builder::{ExecuteBuilder, QueryBuilder},
-    dialects::condition::{Where, WhereAppend},
+    dialects::condition::WhereAppend,
 };
 // use easy_sqlx_core::sql::builder::insert_builder::InsertBuilder;
 use sqlx::{postgres::PgConnectOptions, Connection, FromRow, PgConnection};
@@ -113,15 +113,14 @@ async fn main() {
     // User::select_by_id(100, "".to_string());
     let res: Option<User> = User::select()
         .and(User::name_like("%7%".to_string()))
-        .fetch_optional(&mut conn)
+        .optional(&mut conn)
         .await
         .unwrap();
 
     println!("{:?}", res);
 
-    User::select().count(&mut conn).await.unwrap();
-
-    User::select().count(&mut conn).await.unwrap();
+    let c = User::select().count(&mut conn).await.unwrap();
+    println!("count: {c}");
 
     User::name_desc();
 

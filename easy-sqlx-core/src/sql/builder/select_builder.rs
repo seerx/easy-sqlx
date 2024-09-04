@@ -1,5 +1,3 @@
-use std::default;
-
 use crate::sql::{
     dialects::{
         condition::{Condition, Where, WhereAppend},
@@ -123,7 +121,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
     #[cfg(feature = "postgres")]
     type DB = Postgres;
 
-    async fn fetch_one<'e, 'c: 'e, E, O>(self, executor: E) -> Result<O, sqlx::Error>
+    async fn one<'e, 'c: 'e, E, O>(self, executor: E) -> Result<O, sqlx::Error>
     where
         E: 'e + sqlx::Executor<'c, Database = Self::DB>,
         O: 'e,
@@ -144,7 +142,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
         // todo!()
     }
 
-    async fn fetch_optional<'e, 'c: 'e, E, O>(self, executor: E) -> Result<Option<O>, sqlx::Error>
+    async fn optional<'e, 'c: 'e, E, O>(self, executor: E) -> Result<Option<O>, sqlx::Error>
     where
         E: 'e + sqlx::Executor<'c, Database = Self::DB>,
         O: 'e,
@@ -163,7 +161,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
         Ok(result)
     }
 
-    async fn fetch_all<'e, 'c: 'e, E, O>(self, executor: E) -> Result<Vec<O>, sqlx::Error>
+    async fn all<'e, 'c: 'e, E, O>(self, executor: E) -> Result<Vec<O>, sqlx::Error>
     where
         E: 'e + sqlx::Executor<'c, Database = Self::DB>,
         for<'r> O: FromRow<'r, <Self::DB as Database>::Row>,
@@ -182,7 +180,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
         Ok(result)
     }
 
-    async fn fetch_page<'e, 'c: 'e, E, O>(
+    async fn page<'e, 'c: 'e, E, O>(
         &self,
         executor: E,
         page: &PageRequest,
@@ -213,7 +211,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
         let mut query = sqlx::query_as(&sql);
         if let Some(w) = &self.wh {
             query = w.bind_to_query_as(query);
-        } 
+        }
 
         result.records = query.fetch_all(executor).await?;
 
@@ -242,7 +240,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
     //     // query.fe
     // }
 
-    async fn fetch_one_scalar<'c, E, O>(&self, executor: E, field: &str) -> Result<O, sqlx::Error>
+    async fn one_scalar<'c, E, O>(&self, executor: E, field: &str) -> Result<O, sqlx::Error>
     where
         (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
         E: 'c + sqlx::Executor<'c, Database = Self::DB>,
@@ -256,7 +254,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
         query.fetch_one(executor).await
     }
 
-    async fn fetch_option_scalar<'q, 'c, E, O>(
+    async fn optional_scalar<'q, 'c, E, O>(
         &self,
         executor: E,
         field: &'q str,
@@ -274,7 +272,7 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
         query.fetch_optional(executor).await
     }
 
-    async fn fetch_all_scalars<'q, 'c, E, O>(
+    async fn all_scalars<'q, 'c, E, O>(
         &self,
         executor: E,
         field: &'q str,
@@ -305,5 +303,41 @@ impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
 
         let c: i64 = query.fetch_one(executor).await?;
         Ok(c as usize)
+    }
+
+    async fn page_scalars<'e, 'c: 'e, E, O>(
+        &self,
+        executor: E,
+        field: &'c str,
+        page: &PageRequest,
+    ) -> Result<PageResult<O>, sqlx::Error>
+    where
+        (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
+        E: 'e + sqlx::Executor<'c, Database = Self::DB> + 'c + Copy,
+        O: Send + Unpin,
+    {
+        let mut result: PageResult<O> = PageResult {
+            records: vec![],
+            page_count: 0,
+            total: 0,
+            page_no: page.get_page_no(),
+            page_size: page.get_page_size(),
+        };
+        if page.total_page_info {
+            // 查询总条数，统计页面信息
+            let mut counter = SelectBuilder::new(self.table.clone());
+            counter.wh = self.wh.clone();
+            let total = counter.count(executor).await?;
+            result.set_total(total);
+        }
+
+        let sql = self.generate_query_page_scalar(field, page);
+        let mut query = sqlx::query_scalar(&sql);
+        if let Some(w) = &self.wh {
+            query = w.bind_to_query_scalar(query);
+        }
+        result.records = query.fetch_all(executor).await?;
+
+        Ok(result)
     }
 }
