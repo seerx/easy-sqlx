@@ -54,7 +54,7 @@ table 属性
     trim_indexes    清理 table 未定义的索引
     indexes         索引数组，参见索引
 
-index 属性
+index 属性，可定义在 table 属性内，也可以单独定义到 struct
     name            索引名称
     columns()       索引的列，字符串数组，使用小括号包围
     unique          是否唯一索引
