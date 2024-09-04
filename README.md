@@ -43,6 +43,33 @@ struct Table1 {
 ```
 sync_tables(connection, vec![Table1::table()], None).await?;
 ```
+table 属性
+    name            表名称
+    comment         注释
+    schema          表空间
+    from            从另一个表 rename
+    recreate        重新创建表,在同一个数据库中不会重复操作，直到修改其值
+    trim_columns    清理 struct 中未定义的数据库列
+    trim_indexes    清理 table 未定义的索引
+    indexes         索引数组，参见索引
+
+index 属性
+    name            索引名称
+    columns()       索引的列，字符串数组，使用小括号包围
+    unique          是否唯一索引
+
+col 属性
+    ignore          忽略，不与数据库关联
+    pk              主键
+    autoincr        自增类型
+    column          字段名称
+    len             长度，字符串长度或精度
+    col_type        sql 数据类型，用于自定义数据库类型
+    comment         说明
+    default         默认值
+    from            从另一个字段重命名而来
+    replace         如果修改数据类型发生错误时，删除原字段，重新创建
+
 
 ##### 添加记录 1
 ```

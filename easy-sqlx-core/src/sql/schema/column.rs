@@ -195,7 +195,7 @@ impl ToTokens for Column {
 impl Parse for Column {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         const EXPECTED_ATTRIBUTE: &str =
-            "unexpected attribute, expected any of: ignore, pk, column, col_type, autoincr, comment, default, from, replace";
+            "unexpected attribute, expected any of: ignore, pk, column, len, col_type, autoincr, comment, default, from, replace";
 
         let mut column = Column::default();
 
