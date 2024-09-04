@@ -1,4 +1,6 @@
 use crate::sql::utils::{pair::Pair, quote::Quoter};
+use chrono::NaiveDateTime;
+use sqlx::Database;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Operator {
@@ -117,15 +119,31 @@ impl Condition {
     }
 }
 
-#[cfg(feature = "postgres")]
-use sqlx::{postgres::PgArguments, Postgres};
-
 impl Condition {
-    #[cfg(feature = "postgres")]
-    pub fn bind_to_query<'a>(
+    pub fn bind_to_query<'a, DB: Database>(
         &self,
-        query: sqlx::query::Query<'a, Postgres, PgArguments>,
-    ) -> sqlx::query::Query<'a, Postgres, PgArguments> {
+        query: sqlx::query::Query<'a, DB, DB::Arguments<'a>>,
+    ) -> sqlx::query::Query<'a, DB, DB::Arguments<'a>>
+    where
+        Option<bool>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        bool: sqlx::Type<DB>,
+        Option<i16>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i16: sqlx::Type<DB>,
+        Option<i32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i32: sqlx::Type<DB>,
+        Option<i64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i64: sqlx::Type<DB>,
+        Option<f64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f64: sqlx::Type<DB>,
+        Option<f32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f32: sqlx::Type<DB>,
+        Option<NaiveDateTime>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        NaiveDateTime: sqlx::Type<DB>,
+        Option<String>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        String: sqlx::Type<DB>,
+        Option<Vec<u8>>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        Vec<u8>: sqlx::Type<DB>,
+    {
         match self {
             Condition::Condition(p, o) => {
                 if o.is_not_param() {
@@ -141,6 +159,49 @@ impl Condition {
             Condition::Or(left, right) => {
                 let qry = left.bind_to_query(query);
                 right.bind_to_query(qry)
+            }
+        }
+    }
+
+    pub fn bind_to_query_as<'a, O, DB: Database>(
+        &self,
+        query: sqlx::query::QueryAs<'a, DB, O, DB::Arguments<'a>>,
+    ) -> sqlx::query::QueryAs<'a, DB, O, DB::Arguments<'a>>
+    where
+        Option<bool>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        bool: sqlx::Type<DB>,
+        Option<i16>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i16: sqlx::Type<DB>,
+        Option<i32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i32: sqlx::Type<DB>,
+        Option<i64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i64: sqlx::Type<DB>,
+        Option<f64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f64: sqlx::Type<DB>,
+        Option<f32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f32: sqlx::Type<DB>,
+        Option<NaiveDateTime>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        NaiveDateTime: sqlx::Type<DB>,
+        Option<String>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        String: sqlx::Type<DB>,
+        Option<Vec<u8>>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        Vec<u8>: sqlx::Type<DB>,
+    {
+        match self {
+            Condition::Condition(p, o) => {
+                if o.is_not_param() {
+                    query
+                } else {
+                    p.bind_to_query_as(query)
+                }
+            }
+            Condition::And(left, right) => {
+                let qry = left.bind_to_query_as(query);
+                right.bind_to_query_as(qry)
+            }
+            Condition::Or(left, right) => {
+                let qry = left.bind_to_query_as(query);
+                right.bind_to_query_as(qry)
             }
         }
     }
@@ -169,7 +230,10 @@ impl Condition {
                         param_index + p.value.len(),
                     );
                 }
-                (format!("{} {op} ${param_index}", quoter.quote(&field)), param_index + 1)
+                (
+                    format!("{} {op} ${param_index}", quoter.quote(&field)),
+                    param_index + 1,
+                )
             }
             Condition::And(left, right) => {
                 let (left_cond, index) = left.sql(param_index, quoter);
@@ -279,13 +343,64 @@ impl Where {
         }
     }
 
-    #[cfg(feature = "postgres")]
-    pub fn bind_to_query<'a>(
+    pub fn bind_to_query<'a, DB: Database>(
         &self,
-        query: sqlx::query::Query<'a, Postgres, PgArguments>,
-    ) -> sqlx::query::Query<'a, Postgres, PgArguments> {
+        query: sqlx::query::Query<'a, DB, DB::Arguments<'a>>,
+    ) -> sqlx::query::Query<'a, DB, DB::Arguments<'a>>
+    where
+        Option<bool>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        bool: sqlx::Type<DB>,
+        Option<i16>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i16: sqlx::Type<DB>,
+        Option<i32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i32: sqlx::Type<DB>,
+        Option<i64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i64: sqlx::Type<DB>,
+        Option<f64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f64: sqlx::Type<DB>,
+        Option<f32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f32: sqlx::Type<DB>,
+        Option<NaiveDateTime>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        NaiveDateTime: sqlx::Type<DB>,
+        Option<String>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        String: sqlx::Type<DB>,
+        Option<Vec<u8>>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        Vec<u8>: sqlx::Type<DB>,
+    {
         if let Some(c) = &self.cond {
-            return c.bind_to_query(query)
+            return c.bind_to_query(query);
+        }
+        query
+    }
+
+    pub fn bind_to_query_as<'a, O, DB: Database>(
+        &self,
+        query: sqlx::query::QueryAs<'a, DB, O, DB::Arguments<'a>>,
+    ) -> sqlx::query::QueryAs<'a, DB, O, DB::Arguments<'a>>
+    where
+        O: std::marker::Send,
+        O: Unpin,
+        Option<bool>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        bool: sqlx::Type<DB>,
+        Option<i16>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i16: sqlx::Type<DB>,
+        Option<i32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i32: sqlx::Type<DB>,
+        Option<i64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i64: sqlx::Type<DB>,
+        Option<f64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f64: sqlx::Type<DB>,
+        Option<f32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f32: sqlx::Type<DB>,
+        Option<NaiveDateTime>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        NaiveDateTime: sqlx::Type<DB>,
+        Option<String>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        String: sqlx::Type<DB>,
+        Option<Vec<u8>>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        Vec<u8>: sqlx::Type<DB>,
+    {
+        if let Some(c) = &self.cond {
+            return c.bind_to_query_as(query);
         }
         query
     }

@@ -606,6 +606,8 @@ dependencies = [
  "easy-sqlx-core",
  "sqlx",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

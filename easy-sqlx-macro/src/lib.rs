@@ -152,7 +152,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let delete = create_delete(&table, &ident);
     let build_delete = create_delete_builder();
 
-    // let build_select = create_select_builder();
+    let build_select = create_select_builder();
 
     // 实现 comment 方法
     let output = quote! {
@@ -183,7 +183,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             #delete
             #build_delete
 
-            // #build_select
+            #build_select
 
             #(#col_wrapper_methods) *
 

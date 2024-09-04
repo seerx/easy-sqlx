@@ -11,4 +11,7 @@ easy-sqlx-core = { path = "../easy-sqlx-core", features = ["postgres"] }
 easy-sqlx = { path = "../" }
 sqlx.workspace = true
 
+tracing-subscriber.workspace = true
+tracing.workspace = true
+
 chrono.workspace = true

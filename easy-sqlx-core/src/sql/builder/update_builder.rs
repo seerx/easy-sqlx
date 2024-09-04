@@ -90,7 +90,7 @@ impl<'a> ExecuteBuilder for UpdateBuilder<'a> {
     where
         for<'e> &'e mut C: sqlx::Executor<'e, Database = Self::DB>,
     {
-        let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
+        let schema = schema::new(self.default_schema.to_string());
         
         let cols: Vec<String> = self.columns.iter().map(|c| c.name.to_string()).collect();
         let sql = schema.sql_update_columns(&self.table, &cols, self.wh.clone());

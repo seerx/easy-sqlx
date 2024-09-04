@@ -136,7 +136,7 @@ where
 async fn check_recreate<'c, T, DB: Database>(
     tables: &Vec<TableSchema>,
     conn: &mut T,
-    s: &impl schema::Schema<'c, T, DB>,
+    s: &impl schema::Schema,
 ) -> io::Result<()>
 where
     for<'e> &'e mut T: Executor<'e, Database = DB>,

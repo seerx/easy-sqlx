@@ -84,7 +84,7 @@ impl<'a> ExecuteBuilder for DeleteBuilder<'a> {
     where
         for<'e> &'e mut C: sqlx::Executor<'e, Database = Self::DB>,
     {
-        let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
+        let schema = schema::new(self.default_schema.to_string());
 
         let sql = schema.sql_delete(&self.table, self.wh.clone());
 

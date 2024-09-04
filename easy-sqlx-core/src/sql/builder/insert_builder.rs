@@ -48,7 +48,7 @@ impl<'a> ExecuteBuilder for InsertBuilder<'a>
     where
         for<'e> &'e mut C: Executor<'e, Database = Self::DB>,
     {
-        let schema = schema::new::<C, Self::DB>(self.default_schema.to_string());
+        let schema = schema::new(self.default_schema.to_string());
         let cols: Vec<String> = self.columns.iter().map(|c| c.name.to_string()).collect();
         let sql = schema.sql_insert_columns(&self.table, &cols);
 

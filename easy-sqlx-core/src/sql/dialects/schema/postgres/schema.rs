@@ -1,6 +1,6 @@
 use std::io;
 
-use sqlx::{ColumnIndex, Database, Decode, Encode, Executor, IntoArguments, Type};
+use sqlx::{ColumnIndex, Database, Decode, Encode, Executor, IntoArguments, Postgres, Type};
 // use tools::snowflake;
 // use tracing_subscriber::fmt::format;
 
@@ -22,17 +22,16 @@ pub struct PgSchema {
 }
 
 impl PgSchema {
-    pub fn new<'c, C, DB: Database>(ctx: context::Context) -> impl Schema<'c, C, DB>
-    where
-        for<'e> &'e mut C: Executor<'e, Database = DB>,
-        for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
-        for<'a> String: Decode<'a, DB> + Type<DB>,
-        for<'a> &'a str: ColumnIndex<DB::Row>,
-        for<'a> std::string::String: Encode<'a, DB>,
-        for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
-        for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
-        for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
-        // for<'a> i64: sqlx::Decode<'a, <E as Executor<'c>>::Database>,
+    pub fn new(ctx: context::Context) -> impl Schema
+// where
+    //     for<'e> &'e mut C: Executor<'e, Database = DB>,
+    //     for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
+    //     for<'a> String: Decode<'a, DB> + Type<DB>,
+    //     for<'a> &'a str: ColumnIndex<DB::Row>,
+    //     for<'a> std::string::String: Encode<'a, DB>,
+    //     for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+    //     for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+    //     for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
     {
         Self { ctx }
     }
@@ -73,16 +72,15 @@ impl PgSchema {
     }
 }
 
-impl<'c, C, DB: Database> Schema<'c, C, DB> for PgSchema
-where
-    for<'a> &'a mut C: Executor<'a, Database = DB>,
-    for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
-    for<'a> &'a str: ColumnIndex<DB::Row>,
-    for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
-    for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
-    for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
-    for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
-    // for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
+impl Schema for PgSchema
+// where
+//     for<'a> &'a mut C: Executor<'a, Database = Self::DB>,
+//     for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
+//     for<'a> &'a str: ColumnIndex<DB::Row>,
+//     for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+//     for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+//     for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
+//     for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
 {
     // type DB = Postgres;
 
@@ -115,7 +113,16 @@ where
         sqls
     }
 
-    async fn get_tables(&self, conn: &mut C) -> std::io::Result<Vec<TableSchema>> {
+    async fn get_tables<C, DB: Database>(&self, conn: &mut C) -> std::io::Result<Vec<TableSchema>>
+    where
+        for<'a> &'a mut C: Executor<'a, Database = DB>,
+        for<'a> <DB as Database>::Arguments<'a>: IntoArguments<'a, DB>,
+        for<'a> &'a str: ColumnIndex<DB::Row>,
+        for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
+        for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
+    {
         // get_tables(&self.ctx, conn).await
         // let c = &mut self.ctx.conn;
         let mut tables: Vec<TableSchema> = get_tables(&self.ctx, &mut *conn)
@@ -180,12 +187,21 @@ where
         self.ctx.table_name_with_schema(&table.name_with_schema())
     }
 
-    async fn query_upgrade_tags(
+    async fn query_upgrade_tags<C, DB: Database>(
         &self,
         conn: &mut C,
         table_name: &String,
         tag: &String,
-    ) -> io::Result<Vec<String>> {
+    ) -> io::Result<Vec<String>>
+    where
+        for<'a> &'a mut C: Executor<'a, Database = DB>,
+        for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
+        for<'a> &'a str: ColumnIndex<DB::Row>,
+        for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
+        for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
+    {
         // tracing::info!("query_upgrade_tags 1");
         self.check_upgrade_table(&mut *conn).await?;
         let query: Result<Vec<upgrade::Upgrade>, sqlx::Error> =
@@ -243,13 +259,22 @@ where
     //         })
     // }
 
-    async fn insert_upgrade_tag(
+    async fn insert_upgrade_tag<C, DB: Database>(
         &self,
         conn: &mut C,
         table_name: &String,
         tag: &String,
         tag_value: &String,
-    ) -> io::Result<()> {
+    ) -> io::Result<()>
+    where
+        for<'a> &'a mut C: Executor<'a, Database = DB>,
+        for<'a> <DB as Database>::Arguments<'a>: IntoArguments<'a, DB>,
+        for<'a> &'a str: ColumnIndex<DB::Row>,
+        for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
+        for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
+    {
         self.check_upgrade_table(&mut *conn).await?;
         // tracing::error!("insert tag: {}", upgrade::TABLE_INSERT);
         sqlx::query(upgrade::TABLE_INSERT)
@@ -271,11 +296,20 @@ where
         // todo!()
     }
 
-    async fn execute_sql<'a>(
+    async fn execute_sql<'s, C, DB: Database>(
         &self,
         conn: &mut C,
-        sql: &'a str,
-    ) -> io::Result<<DB as Database>::QueryResult> {
+        sql: &'s str,
+    ) -> io::Result<<DB as Database>::QueryResult>
+    where
+        for<'a> &'a mut C: Executor<'a, Database = DB>,
+        for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
+        for<'a> &'a str: ColumnIndex<DB::Row>,
+        for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+        for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB> + Encode<'a, DB>,
+        for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
+    {
         sqlx::query(sql).execute(&mut *conn).await.map_err(|err| {
             tracing::error!("Execute sql {sql} error: {err}");
             io::Error::new(
@@ -334,7 +368,12 @@ where
         )
     }
 
-    fn sql_update_columns(&self, table: &TableSchema, cols: &Vec<String>, wh: Option<Where>) -> String {
+    fn sql_update_columns(
+        &self,
+        table: &TableSchema,
+        cols: &Vec<String>,
+        wh: Option<Where>,
+    ) -> String {
         let mut columns = "".to_string();
 
         for (n, col) in cols.iter().enumerate() {
@@ -349,7 +388,7 @@ where
         let mut where_str = String::from("");
         if let Some(w) = wh {
             let (ws, _) = w.sql(cols.len() + 1, &self.quoter());
-            if !ws.is_empty() { 
+            if !ws.is_empty() {
                 where_str.push_str(" where ");
                 where_str.push_str(&ws);
             }
@@ -360,16 +399,16 @@ where
             self.ctx.quote(&self.table_name_with_schema(table))
         )
     }
-    
+
     fn quoter(&self) -> crate::sql::utils::quote::Quoter {
         self.ctx.quoter.clone()
     }
-    
+
     fn sql_delete(&self, table: &TableSchema, wh: Option<Where>) -> String {
         let mut where_str = String::from("");
         if let Some(w) = wh {
             let (ws, _) = w.sql(1, &self.quoter());
-            if !ws.is_empty() { 
+            if !ws.is_empty() {
                 where_str.push_str(" where ");
                 where_str.push_str(&ws);
             }
@@ -380,15 +419,18 @@ where
             self.ctx.quote(&self.table_name_with_schema(table))
         )
     }
-    
-    fn sql_select(&self, table: &TableSchema, columns: &Vec<String>, wh: Option<Where>) -> String {
 
-        let cols: Vec<String> = columns.iter().map(|c| self.quoter().quote(c)).collect();
+    fn sql_select(&self, table: &TableSchema, wh: Option<Where>) -> String {
+        let cols: Vec<String> = table
+            .columns
+            .iter()
+            .map(|c| self.quoter().quote(&c.get_query_column_name()))
+            .collect();
 
         let mut where_str = String::from("");
         if let Some(w) = wh {
             let (ws, _) = w.sql(1, &self.quoter());
-            if !ws.is_empty() { 
+            if !ws.is_empty() {
                 where_str.push_str(" where ");
                 where_str.push_str(&ws);
             }
@@ -400,7 +442,7 @@ where
             self.ctx.quote(&self.table_name_with_schema(table))
         )
     }
-    
+
     // async fn execute_sql<'c, E>(
     //     &self,
     //     conn: E,

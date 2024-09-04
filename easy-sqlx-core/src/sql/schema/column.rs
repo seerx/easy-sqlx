@@ -10,7 +10,6 @@ use super::types::types::SqlType;
 pub struct Column {
     /// 结构体字段名称
     pub name: String,
-    
 
     /// 数据库字段名称
     pub column: Option<String>,
@@ -46,8 +45,6 @@ pub struct Column {
     /// 如果字段更新失败， replace 为 true 时，则删除旧字段并添加新字段
     /// 注意：删除旧字段会连带字段中的数据一起删除，并且不能恢复
     pub replace: bool,
-
-
     // /// [代码生成控制]
     // /// 数据类型使用的 Option 数量
     // pub rust_type_options: isize,
@@ -91,6 +88,14 @@ impl Column {
     pub fn get_column_name(&self) -> String {
         if let Some(name) = self.column.clone() {
             name
+        } else {
+            self.name.clone()
+        }
+    }
+
+    pub fn get_query_column_name(&self) -> String {
+        if let Some(name) = self.column.clone() {
+            format!("{name} as {}", self.name)
         } else {
             self.name.clone()
         }

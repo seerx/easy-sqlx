@@ -1,7 +1,6 @@
 use std::future::Future;
 
-use futures::stream::BoxStream;
-use sqlx::{Database, Error, Executor};
+use sqlx::{Database, Error, Executor, FromRow};
 
 pub trait ExecuteBuilder {
     type DB: Database;
@@ -17,18 +16,33 @@ pub trait ExecuteBuilder {
 pub trait QueryBuilder<'a, O> {
     type DB: Database;
 
-    fn fetch<'e, 'c: 'e, E>(self, executor: E) -> BoxStream<'e, Result<O, Error>>
+    fn fetch_one<'e, 'c: 'e, E>(self, executor: E) -> impl Future<Output = Result<O, Error>>
     where
         E: 'e + Executor<'c, Database = Self::DB>,
-        O: 'e;
+        O: 'e,
+        for<'r> O: FromRow<'r, <Self::DB as Database>::Row>,
+        O: std::marker::Send,
+        O: Unpin;
 
-    // fn fetch<'e, 'c: 'e, E>(self, executor: E) -> BoxStream<'e, Result<<Self::DB as Database>::Row, Error>>
-    // where
-    //     'a: 'e,
-    //     E: Executor<'c, Database = Self::DB>;
-    // for<'e> &'e mut E: Executor<'c, Database = Self::DB>;
-}
+    fn fetch_optional<'e, 'c: 'e, E>(
+        self,
+        executor: E,
+    ) -> impl Future<Output = Result<Option<O>, Error>>
+    where
+        // 'q: 'e,
+        E: 'e + Executor<'c, Database = Self::DB>,
+        for<'r> O: FromRow<'r, <Self::DB as Database>::Row>,
+        O: 'e,
+        O: std::marker::Send,
+        O: Unpin;
 
-fn t() {
-    // sqlx::query_as("").fetch(executor)
+    fn fetch_all<'e, 'c: 'e, E>(self, executor: E) -> impl Future<Output = Result<Vec<O>, Error>>
+    where
+        // 'q: 'e,
+        E: 'e + Executor<'c, Database = Self::DB>,
+        for<'r> O: FromRow<'r, <Self::DB as Database>::Row>,
+        O: 'e,
+        O: std::marker::Send,
+        O: Unpin;
+    // A: 'e,
 }
