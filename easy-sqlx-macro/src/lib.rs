@@ -5,16 +5,16 @@ use heck::ToSnakeCase;
 use insert::{create_insert, create_insert_builder};
 use proc_macro2::Span;
 use quote::quote;
-use select::create_select_builder;
+use select::{create_select_builder, create_select_by_id};
 use syn::{parse_macro_input, DeriveInput};
 
 mod attrs;
 mod condition;
+mod delete;
 mod field;
 mod insert;
-mod update;
-mod delete;
 mod select;
+mod update;
 
 use attrs::{column::parse_column_attrs, table::parse_table_attrs};
 use update::{create_update, create_update_builder};
@@ -64,7 +64,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // 条件属性函数
     let mut col_conditions: Vec<proc_macro2::TokenStream> = Vec::new();
 
-    let mut keys = vec![];
+    let mut struct_fields: Vec<syn::Field> = vec![];
 
     if let syn::Data::Struct(syn::DataStruct {
         struct_token: _,
@@ -95,17 +95,19 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                                 });
 
                                 // 生成列函数
-                                let wrappers = create_field_wrapper(&column, &field, syn_type, is_vec);
+                                let wrappers =
+                                    create_field_wrapper(&column, &field, syn_type, is_vec);
                                 col_wrapper_methods.extend(wrappers);
 
                                 // 生成条件属性函数
-                                let conds = create_conditions(&column, &field, syn_type, rust_type, is_vec);
+                                let conds =
+                                    create_conditions(&column, &field, syn_type, rust_type, is_vec);
                                 col_conditions.extend(conds);
 
                                 // 主键
-                                if column.pk {
-                                    keys.push(field);
-                                }
+                                // if column.pk {
+                                struct_fields.push(field);
+                                // }
 
                                 // let self_dot_name = syn::Ident::new(
                                 //     format!("$self.{}", &column.name).as_str(),
@@ -153,6 +155,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let build_delete = create_delete_builder();
 
     let build_select = create_select_builder();
+    let select_by_id = create_select_by_id(&table, &ident, &struct_fields);
 
     // 实现 comment 方法
     let output = quote! {
@@ -184,6 +187,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             #build_delete
 
             #build_select
+            #select_by_id
 
             #(#col_wrapper_methods) *
 

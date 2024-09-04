@@ -13,13 +13,13 @@ use tracing_subscriber::{
     filter::filter_fn, layer::SubscriberExt, util::SubscriberInitExt, Layer as _, Registry,
 };
 
-#[derive(Table, Default, Debug, FromRow)]
+#[derive(Table, Default, Debug, FromRow, Clone)]
 #[index(columns("abc"))]
-#[table(recreate="now")]
+#[table(recreate = "now")]
 pub struct User {
     #[col(pk)]
     pub id: i64,
-    #[col(len = 30, column = "abc")]
+    #[col(pk, len = 30, column = "abc")]
     pub name: String,
     pub blob: Vec<u8>,
     pub create_time: Option<chrono::NaiveDateTime>,
@@ -105,12 +105,14 @@ async fn main() {
     User::build_update()
         .set_column(User::name("007".to_string()))
         .and(User::id_eq(7))
+        .and(User::name_eq("007".to_string()))
         .execute(&mut conn)
         .await
         .unwrap();
 
-    let res: Option<User> = User::build_select()
-        .and(User::id_eq(106))
+    // User::select_by_id(100, "".to_string());
+    let res: Option<User> = User::select()
+        .and(User::name_like("%7%".to_string()))
         .fetch_optional(&mut conn)
         .await
         .unwrap();

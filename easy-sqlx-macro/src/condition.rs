@@ -48,7 +48,7 @@ pub fn create_conditions(
 ) -> Vec<proc_macro2::TokenStream> {
     let field_name = proc_macro2::Ident::new(col.name.as_str(), proc_macro2::Span::call_site()); // &col.name;
     let col_name = &col.get_column_name();
-    let ty = &field.ty;
+    let _ty = &field.ty;
 
     let mut conditions = vec![];
 

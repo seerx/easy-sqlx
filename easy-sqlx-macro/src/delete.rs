@@ -17,7 +17,7 @@ pub fn create_delete(table: &TableSchema, entity: &Ident) -> proc_macro2::TokenS
             );
             where_args.push(quote! {
                 // let #this = self;
-                builder = builder.and(#entity::#col_eq(self.#field_name));
+                builder = builder.and(#entity::#col_eq(self.#field_name.clone()));
             });
         }
     }
