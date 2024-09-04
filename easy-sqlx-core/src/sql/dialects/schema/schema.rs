@@ -1,7 +1,10 @@
 use sqlx::{ColumnIndex, Database, Decode, Encode, Executor, IntoArguments};
 
 use crate::sql::{
-    dialects::condition::Where,
+    dialects::{
+        condition::Where,
+        page::{Order, PageRequest},
+    },
     schema::{column::Column, index::Index, table::TableSchema},
     utils::quote::Quoter,
 };
@@ -114,5 +117,11 @@ pub trait Schema
 
     fn sql_delete(&self, table: &TableSchema, wh: Option<Where>) -> String;
 
-    fn sql_select(&self, table: &TableSchema, wh: Option<Where>) -> String;
+    fn sql_select(
+        &self,
+        table: &TableSchema,
+        wh: Option<Where>,
+        orders: &Vec<Order>,
+        pg: Option<&PageRequest>,
+    ) -> String;
 }

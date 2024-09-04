@@ -1,11 +1,16 @@
 use std::io;
 
-use sqlx::{ColumnIndex, Database, Decode, Encode, Executor, IntoArguments, Postgres, Type};
+use sqlx::{ColumnIndex, Database, Decode, Encode, Executor, IntoArguments};
 // use tools::snowflake;
 // use tracing_subscriber::fmt::format;
 
 use crate::sql::{
-    dialects::{condition::Where, context, schema::schema::Schema},
+    dialects::{
+        condition::Where,
+        context,
+        page::{Order, PageRequest},
+        schema::schema::Schema,
+    },
     schema::{column::Column, index::Index, table::TableSchema, types::convert_sql_type},
 };
 
@@ -420,7 +425,13 @@ impl Schema for PgSchema
         )
     }
 
-    fn sql_select(&self, table: &TableSchema, wh: Option<Where>) -> String {
+    fn sql_select(
+        &self,
+        table: &TableSchema,
+        wh: Option<Where>,
+        orders: &Vec<Order>,
+        pg: Option<&PageRequest>,
+    ) -> String {
         let cols: Vec<String> = table
             .columns
             .iter()
@@ -436,8 +447,31 @@ impl Schema for PgSchema
             }
         }
 
+        let mut order_str = String::from("");
+        if !orders.is_empty() {
+            order_str.push_str(" order by ");
+            let items: Vec<String> = orders
+                .iter()
+                .map(|o| format!("{} {}", self.ctx.quote(&o.field), o.order_type.sql()))
+                .collect();
+            order_str.push_str(items.join(", ").as_str());
+        }
+
+        let mut page_str = String::from("");
+        if let Some(page) = pg {
+            // 分页
+            page_str.push_str(
+                format!(
+                    "offset {} limit {}",
+                    (page.page_no - 1) * page.page_size,
+                    page.page_size
+                )
+                .as_str(),
+            );
+        }
+
         format!(
-            "select {} from {} {where_str}",
+            "select {} from {} {where_str} {order_str} {page_str}",
             cols.join(","),
             self.ctx.quote(&self.table_name_with_schema(table))
         )

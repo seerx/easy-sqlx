@@ -119,7 +119,7 @@ async fn main() {
 
     println!("{:?}", res);
 
-    User::name_order();
+    User::name_desc();
 
     user.delete().execute(&mut conn).await.unwrap();
 
