@@ -119,6 +119,8 @@ async fn main() {
 
     println!("{:?}", res);
 
+    User::name_order();
+
     user.delete().execute(&mut conn).await.unwrap();
 
     // let update = User::build_update();
