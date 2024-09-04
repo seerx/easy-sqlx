@@ -4,7 +4,7 @@ use chrono::Local;
 use easy_sqlx::{sync_tables, Table};
 use easy_sqlx_core::sql::{
     builder::builder::{ExecuteBuilder, QueryBuilder},
-    dialects::condition::WhereAppend,
+    dialects::condition::{Where, WhereAppend},
 };
 // use easy_sqlx_core::sql::builder::insert_builder::InsertBuilder;
 use sqlx::{postgres::PgConnectOptions, Connection, FromRow, PgConnection};
@@ -64,8 +64,8 @@ async fn main() {
         .username("prjmgr")
         .password("123456");
     let mut conn = PgConnection::connect_with(&binding).await.unwrap(); // .expect_err("connect database error");
-    // User::id_in(vec![1]);
-    // User::cre
+                                                                        // User::id_in(vec![1]);
+                                                                        // User::cre
     sync_tables(&mut conn, vec![User::table()], "")
         .await
         .unwrap();
@@ -103,6 +103,8 @@ async fn main() {
     //     .execute(&mut conn)
     //     .await.unwrap();
 
+    user.update().execute(&mut conn).await.unwrap();
+
     User::build_update()
         .set_column(User::name("007".to_string()))
         .and(User::id_eq(7))
@@ -124,7 +126,13 @@ async fn main() {
     let c = User::select().count(&mut conn).await.unwrap();
     println!("count: {c}");
 
-    User::name_desc();
+    let u: User = User::select_by_id(1, "1".to_string())
+        .one(&mut conn)
+        .await
+        .unwrap();
+    println!("{:?}", u);
+
+    // User::select().and(User::id_eq(1)).one(&mut conn).await.unwrap()
 
     user.delete().execute(&mut conn).await.unwrap();
 
