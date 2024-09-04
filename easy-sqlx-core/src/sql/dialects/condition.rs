@@ -50,7 +50,7 @@ impl Operator {
         }
     }
 
-    pub fn is_not_param(&self) -> bool {
+    pub fn is_no_param(&self) -> bool {
         match self {
             Self::IsNull | Self::IsNotNull => true,
             _ => false,
@@ -146,7 +146,7 @@ impl Condition {
     {
         match self {
             Condition::Condition(p, o) => {
-                if o.is_not_param() {
+                if o.is_no_param() {
                     query
                 } else {
                     p.value.bind_to_query(query)
@@ -189,7 +189,7 @@ impl Condition {
     {
         match self {
             Condition::Condition(p, o) => {
-                if o.is_not_param() {
+                if o.is_no_param() {
                     query
                 } else {
                     p.value.bind_to_query_as(query)
@@ -232,7 +232,7 @@ impl Condition {
     {
         match self {
             Condition::Condition(p, o) => {
-                if o.is_not_param() {
+                if o.is_no_param() {
                     query
                 } else {
                     p.value.bind_to_query_scalar(query)
@@ -255,7 +255,7 @@ impl Condition {
                 let field = p.name.clone();
                 let op = o.sql();
 
-                if o.is_not_param() {
+                if o.is_no_param() {
                     // 不需要参数
                     return (format!("{} {op}", quoter.quote(&field)), param_index);
                 }

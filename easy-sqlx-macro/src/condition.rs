@@ -14,8 +14,11 @@ fn create_condition_func(
         format!("{}_{}", field_name, &oper).as_str(),
         Span::call_site(),
     );
-    if op.is_not_param() {
+
+    if op.is_no_param() {
+        let comment = format!("// {}", op.sql());
         return quote! {
+            #[doc = #comment]
             pub fn #in_name() -> easy_sqlx_core::sql::dialects::condition::Condition {
                 let val: Option<#syn_type> = None;
                 let pair = easy_sqlx_core::sql::utils::pair::Pair {
@@ -27,7 +30,10 @@ fn create_condition_func(
             }
         };
     }
+
+    let comment = format!("// {}", op.sql());
     quote! {
+        #[doc = #comment]
         pub fn #in_name(val: #syn_type) -> easy_sqlx_core::sql::dialects::condition::Condition {
             let pair = easy_sqlx_core::sql::utils::pair::Pair {
                 name: #col_name.to_string(),
@@ -57,6 +63,7 @@ pub fn create_conditions(
 
     if !is_vec {
         conditions.push(quote! {
+            /// in (...)
             pub fn #in_name(val: Vec<#syn_type>) -> easy_sqlx_core::sql::dialects::condition::Condition {
                 let pair = easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),

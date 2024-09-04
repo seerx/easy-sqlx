@@ -42,6 +42,7 @@ pub fn create_update(table: &TableSchema, entity: &Ident) -> proc_macro2::TokenS
         }
     }
     quote! {
+        /// 根据主键更新全部数据
         pub fn update<'a>(&self) -> easy_sqlx_core::sql::builder::update_builder::UpdateBuilder<'a> {
             // let table = &Self::table();
             let #this = self;

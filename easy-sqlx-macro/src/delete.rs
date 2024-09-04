@@ -22,6 +22,7 @@ pub fn create_delete(table: &TableSchema, entity: &Ident) -> proc_macro2::TokenS
         }
     }
     quote! {
+        /// 根据主键删除记录
         pub fn delete<'a>(&self) -> easy_sqlx_core::sql::builder::delete_builder::DeleteBuilder<'a> {
             // let table = &Self::table();
             let #this = self;

@@ -64,7 +64,8 @@ async fn main() {
         .username("prjmgr")
         .password("123456");
     let mut conn = PgConnection::connect_with(&binding).await.unwrap(); // .expect_err("connect database error");
-
+    // User::id_in(vec![1]);
+    // User::cre
     sync_tables(&mut conn, vec![User::table()], "")
         .await
         .unwrap();
@@ -113,6 +114,7 @@ async fn main() {
     // User::select_by_id(100, "".to_string());
     let res: Option<User> = User::select()
         .and(User::name_like("%7%".to_string()))
+        .and(User::id_in(vec![106]))
         .optional(&mut conn)
         .await
         .unwrap();

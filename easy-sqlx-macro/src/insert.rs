@@ -27,7 +27,10 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
             });
         }
     }
+
+    let comment = format!("插入 {} 所有数据到表 {} 中", table.name, table.name_with_schema());
     quote! {
+        #[doc = #comment]
         pub fn insert<'a>(&self) -> easy_sqlx_core::sql::builder::insert_builder::InsertBuilder<'a> {
             // let table = &Self::table();
             let #this = self;
