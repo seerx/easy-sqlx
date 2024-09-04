@@ -144,7 +144,7 @@ User::build_delete()
 ```
 
 ##### 查询
-
+```
 let u: User = User::select_by_id(1) // 联合主键会有多个参数
 .one(&mut conn).await.unwrap();
 println!("{:?}", u);
@@ -153,6 +153,7 @@ println!("{:?}", u);
 User::select() // 生成 SelectBuilder
     .and(User::id_eq(1)) // 查询条件 id = 1
     .one(&mut conn).await.unwrap();
+```
 <pre>
 SelectBuilder 提供了查询条件的添加和组合功能和排序条件的添加
 and 和 or 为添加查询条件函数，首次添加条件时 and 和 or 功能一致，再次添加时
