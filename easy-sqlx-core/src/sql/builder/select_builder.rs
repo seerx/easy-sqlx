@@ -51,6 +51,30 @@ impl<'a> SelectBuilder<'a> {
         let sql = schema.sql_select(&self.table, self.wh.clone(), &self.orders, Some(pg));
         sql
     }
+
+    fn generate_query_scalar(&self, field: &str) -> String {
+        let schema = schema::new(self.default_schema.to_string());
+        let sql = schema.sql_select_columns(
+            &self.table,
+            &vec![field.to_string()],
+            self.wh.clone(),
+            &self.orders,
+            None,
+        );
+        sql
+    }
+
+    fn generate_query_page_scalar(&self, field: &str, pg: &PageRequest) -> String {
+        let schema = schema::new(self.default_schema.to_string());
+        let sql = schema.sql_select_columns(
+            &self.table,
+            &vec![field.to_string()],
+            self.wh.clone(),
+            &self.orders,
+            Some(pg),
+        );
+        sql
+    }
 }
 impl<'a> WhereAppend<Condition> for SelectBuilder<'a> {
     fn and(mut self, cond: Condition) -> Self {
@@ -95,11 +119,11 @@ impl<'a> WhereAppend<Where> for SelectBuilder<'a> {
 #[cfg(feature = "postgres")]
 use sqlx::Postgres;
 
-impl<'a, O> QueryBuilder<'a, O> for SelectBuilder<'a> {
+impl<'a> QueryBuilder<'a> for SelectBuilder<'a> {
     #[cfg(feature = "postgres")]
     type DB = Postgres;
 
-    async fn fetch_one<'e, 'c: 'e, E>(self, executor: E) -> Result<O, sqlx::Error>
+    async fn fetch_one<'e, 'c: 'e, E, O>(self, executor: E) -> Result<O, sqlx::Error>
     where
         E: 'e + sqlx::Executor<'c, Database = Self::DB>,
         O: 'e,
@@ -120,7 +144,7 @@ impl<'a, O> QueryBuilder<'a, O> for SelectBuilder<'a> {
         // todo!()
     }
 
-    async fn fetch_optional<'e, 'c: 'e, E>(self, executor: E) -> Result<Option<O>, sqlx::Error>
+    async fn fetch_optional<'e, 'c: 'e, E, O>(self, executor: E) -> Result<Option<O>, sqlx::Error>
     where
         E: 'e + sqlx::Executor<'c, Database = Self::DB>,
         O: 'e,
@@ -139,7 +163,7 @@ impl<'a, O> QueryBuilder<'a, O> for SelectBuilder<'a> {
         Ok(result)
     }
 
-    async fn fetch_all<'e, 'c: 'e, E>(self, executor: E) -> Result<Vec<O>, sqlx::Error>
+    async fn fetch_all<'e, 'c: 'e, E, O>(self, executor: E) -> Result<Vec<O>, sqlx::Error>
     where
         E: 'e + sqlx::Executor<'c, Database = Self::DB>,
         for<'r> O: FromRow<'r, <Self::DB as Database>::Row>,
@@ -158,13 +182,13 @@ impl<'a, O> QueryBuilder<'a, O> for SelectBuilder<'a> {
         Ok(result)
     }
 
-    async fn fetch_page<'e, 'c: 'e, E>(
-        self,
+    async fn fetch_page<'e, 'c: 'e, E, O>(
+        &self,
         executor: E,
         page: &PageRequest,
     ) -> Result<PageResult<O>, sqlx::Error>
     where
-        E: 'e + sqlx::Executor<'c, Database = Self::DB>,
+        E: 'e + sqlx::Executor<'c, Database = Self::DB> + 'c + Copy,
         for<'r> O: FromRow<'r, <Self::DB as Database>::Row>,
         O: 'e,
         O: std::marker::Send,
@@ -174,21 +198,112 @@ impl<'a, O> QueryBuilder<'a, O> for SelectBuilder<'a> {
             records: vec![],
             page_count: 0,
             total: 0,
-            page_no: page.page_no,
-            page_size: page.page_size,
+            page_no: page.get_page_no(),
+            page_size: page.get_page_size(),
         };
         if page.total_page_info {
             // 查询总条数，统计页面信息
+            let mut counter = SelectBuilder::new(self.table.clone());
+            counter.wh = self.wh.clone();
+            let total = counter.count(executor).await?;
+            result.set_total(total);
         }
 
         let sql = self.generate_page_query_as(page);
         let mut query = sqlx::query_as(&sql);
         if let Some(w) = &self.wh {
             query = w.bind_to_query_as(query);
-        }
+        } 
 
         result.records = query.fetch_all(executor).await?;
 
         Ok(result)
+    }
+
+    // async fn fetch_one_scalar<'q>(&self, field: &'q str) -> Result<O, Error>
+    // where
+    //     (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
+    // {
+    //     let schema = schema::new(self.default_schema.to_string());
+    //     let sql = schema.sql_select_columns(
+    //         &self.table,
+    //         &vec![field.to_string()],
+    //         self.wh.clone(),
+    //         &self.orders,
+    //         None,
+    //     );
+    //     //
+    //     let mut query = sqlx::query_scalar(&sql);
+    //     // query
+    //     if let Some(w) = &self.wh {
+    //         query = w.bind_to_query_scalar(query);
+    //     }
+    //     query.fetch_all(executor)
+    //     // query.fe
+    // }
+
+    async fn fetch_one_scalar<'c, E, O>(&self, executor: E, field: &str) -> Result<O, sqlx::Error>
+    where
+        (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
+        E: 'c + sqlx::Executor<'c, Database = Self::DB>,
+        O: Send + Unpin,
+    {
+        let sql = self.generate_query_scalar(field);
+        let mut query = sqlx::query_scalar(&sql);
+        if let Some(w) = &self.wh {
+            query = w.bind_to_query_scalar(query);
+        }
+        query.fetch_one(executor).await
+    }
+
+    async fn fetch_option_scalar<'q, 'c, E, O>(
+        &self,
+        executor: E,
+        field: &'q str,
+    ) -> Result<Option<O>, sqlx::Error>
+    where
+        (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
+        E: 'c + sqlx::Executor<'c, Database = Self::DB>,
+        O: Send + Unpin,
+    {
+        let sql = self.generate_query_scalar(field);
+        let mut query = sqlx::query_scalar(&sql);
+        if let Some(w) = &self.wh {
+            query = w.bind_to_query_scalar(query);
+        }
+        query.fetch_optional(executor).await
+    }
+
+    async fn fetch_all_scalars<'q, 'c, E, O>(
+        &self,
+        executor: E,
+        field: &'q str,
+    ) -> Result<Vec<O>, sqlx::Error>
+    where
+        (O,): for<'r> FromRow<'r, <Self::DB as Database>::Row>,
+        E: 'c + sqlx::Executor<'c, Database = Self::DB>,
+        O: Send + Unpin,
+    {
+        let sql = self.generate_query_scalar(field);
+        let mut query = sqlx::query_scalar(&sql);
+        if let Some(w) = &self.wh {
+            query = w.bind_to_query_scalar(query);
+        }
+        query.fetch_all(executor).await
+    }
+
+    async fn count<'c, E>(&self, executor: E) -> Result<usize, sqlx::Error>
+    where
+        E: 'c + sqlx::Executor<'c, Database = Self::DB>,
+    {
+        let schema = schema::new(self.default_schema.to_string());
+        let sql = schema.sql_count(&self.table, self.wh.clone());
+        let mut query = sqlx::query_scalar(&sql);
+        if let Some(w) = &self.wh {
+            query = w.bind_to_query_scalar(query);
+        }
+
+        let c: i64 = query.fetch_one(executor).await?;
+        Ok(c as usize)
     }
 }

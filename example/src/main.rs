@@ -119,6 +119,10 @@ async fn main() {
 
     println!("{:?}", res);
 
+    User::select().count(&mut conn).await.unwrap();
+
+    User::select().count(&mut conn).await.unwrap();
+
     User::name_desc();
 
     user.delete().execute(&mut conn).await.unwrap();

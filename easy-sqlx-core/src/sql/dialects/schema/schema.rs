@@ -116,10 +116,19 @@ pub trait Schema
     ) -> String;
 
     fn sql_delete(&self, table: &TableSchema, wh: Option<Where>) -> String;
-
+    fn sql_count(&self, table: &TableSchema, wh: Option<Where>) -> String;
+    
     fn sql_select(
         &self,
         table: &TableSchema,
+        wh: Option<Where>,
+        orders: &Vec<Order>,
+        pg: Option<&PageRequest>,
+    ) -> String;
+    fn sql_select_columns(
+        &self,
+        table: &TableSchema,
+        columns: &Vec<String>,
         wh: Option<Where>,
         orders: &Vec<Order>,
         pg: Option<&PageRequest>,

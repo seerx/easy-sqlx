@@ -425,6 +425,22 @@ impl Schema for PgSchema
         )
     }
 
+    fn sql_count(&self, table: &TableSchema, wh: Option<Where>) -> String {
+        let mut where_str = String::from("");
+        if let Some(w) = wh {
+            let (ws, _) = w.sql(1, &self.quoter());
+            if !ws.is_empty() {
+                where_str.push_str(" where ");
+                where_str.push_str(&ws);
+            }
+        }
+
+        format!(
+            r#"select count(0) as "count" from {} {where_str}"#,
+            self.ctx.quote(&self.table_name_with_schema(table))
+        )
+    }
+
     fn sql_select(
         &self,
         table: &TableSchema,
@@ -435,8 +451,63 @@ impl Schema for PgSchema
         let cols: Vec<String> = table
             .columns
             .iter()
-            .map(|c| self.quoter().quote(&c.get_query_column_name()))
+            .map(|c| c.get_query_column_name())
             .collect();
+        self.sql_select_columns(table, &cols, wh, orders, pg)
+        // let cols: Vec<String> = table
+        //     .columns
+        //     .iter()
+        //     .map(|c| self.quoter().quote(&c.get_query_column_name()))
+        //     .collect();
+
+        // let mut where_str = String::from("");
+        // if let Some(w) = wh {
+        //     let (ws, _) = w.sql(1, &self.quoter());
+        //     if !ws.is_empty() {
+        //         where_str.push_str(" where ");
+        //         where_str.push_str(&ws);
+        //     }
+        // }
+
+        // let mut order_str = String::from("");
+        // if !orders.is_empty() {
+        //     order_str.push_str(" order by ");
+        //     let items: Vec<String> = orders
+        //         .iter()
+        //         .map(|o| format!("{} {}", self.ctx.quote(&o.field), o.order_type.sql()))
+        //         .collect();
+        //     order_str.push_str(items.join(", ").as_str());
+        // }
+
+        // let mut page_str = String::from("");
+        // if let Some(page) = pg {
+        //     // 分页
+        //     page_str.push_str(
+        //         format!(
+        //             "offset {} limit {}",
+        //             (page.page_no - 1) * page.page_size,
+        //             page.page_size
+        //         )
+        //         .as_str(),
+        //     );
+        // }
+
+        // format!(
+        //     "select {} from {} {where_str} {order_str} {page_str}",
+        //     cols.join(","),
+        //     self.ctx.quote(&self.table_name_with_schema(table))
+        // )
+    }
+
+    fn sql_select_columns(
+        &self,
+        table: &TableSchema,
+        columns: &Vec<String>,
+        wh: Option<Where>,
+        orders: &Vec<Order>,
+        pg: Option<&PageRequest>,
+    ) -> String {
+        let cols: Vec<String> = columns.iter().map(|c| self.quoter().quote(&c)).collect();
 
         let mut where_str = String::from("");
         if let Some(w) = wh {
@@ -463,8 +534,8 @@ impl Schema for PgSchema
             page_str.push_str(
                 format!(
                     "offset {} limit {}",
-                    (page.page_no - 1) * page.page_size,
-                    page.page_size
+                    (page.get_page_no() - 1) * page.get_page_size(),
+                    page.get_page_size()
                 )
                 .as_str(),
             );

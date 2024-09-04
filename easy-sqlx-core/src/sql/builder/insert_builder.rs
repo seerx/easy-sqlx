@@ -56,7 +56,7 @@ impl<'a> ExecuteBuilder for InsertBuilder<'a>
             sqlx::query::<Self::DB>(&sql);
 
         for col in &self.columns {
-            query = col.bind_to_query(query);
+            query = col.value.bind_to_query(query);
         }
 
         tracing::debug!("easy-sqlx: {}", query.sql());

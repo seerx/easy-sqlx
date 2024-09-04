@@ -108,7 +108,7 @@ impl<'a> ExecuteBuilder for UpdateBuilder<'a> {
             sqlx::query::<Self::DB>(&sql);
 
         for col in &self.columns {
-            query = col.bind_to_query(query);
+            query = col.value.bind_to_query(query);
         }
         
         if let Some(w) = &self.wh {

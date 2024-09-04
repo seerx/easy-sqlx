@@ -1,6 +1,6 @@
 use crate::sql::utils::{pair::Pair, quote::Quoter};
 use chrono::NaiveDateTime;
-use sqlx::Database;
+use sqlx::{Database, FromRow};
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Operator {
@@ -149,7 +149,7 @@ impl Condition {
                 if o.is_not_param() {
                     query
                 } else {
-                    p.bind_to_query(query)
+                    p.value.bind_to_query(query)
                 }
             }
             Condition::And(left, right) => {
@@ -192,7 +192,7 @@ impl Condition {
                 if o.is_not_param() {
                     query
                 } else {
-                    p.bind_to_query_as(query)
+                    p.value.bind_to_query_as(query)
                 }
             }
             Condition::And(left, right) => {
@@ -202,6 +202,49 @@ impl Condition {
             Condition::Or(left, right) => {
                 let qry = left.bind_to_query_as(query);
                 right.bind_to_query_as(qry)
+            }
+        }
+    }
+
+    pub fn bind_to_query_scalar<'a, O, DB: Database>(
+        &self,
+        query: sqlx::query::QueryScalar<'a, DB, O, DB::Arguments<'a>>,
+    ) -> sqlx::query::QueryScalar<'a, DB, O, DB::Arguments<'a>>
+    where
+        Option<bool>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        bool: sqlx::Type<DB>,
+        Option<i16>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i16: sqlx::Type<DB>,
+        Option<i32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i32: sqlx::Type<DB>,
+        Option<i64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i64: sqlx::Type<DB>,
+        Option<f64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f64: sqlx::Type<DB>,
+        Option<f32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f32: sqlx::Type<DB>,
+        Option<NaiveDateTime>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        NaiveDateTime: sqlx::Type<DB>,
+        Option<String>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        String: sqlx::Type<DB>,
+        Option<Vec<u8>>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        Vec<u8>: sqlx::Type<DB>,
+    {
+        match self {
+            Condition::Condition(p, o) => {
+                if o.is_not_param() {
+                    query
+                } else {
+                    p.value.bind_to_query_scalar(query)
+                }
+            }
+            Condition::And(left, right) => {
+                let qry = left.bind_to_query_scalar(query);
+                right.bind_to_query_scalar(qry)
+            }
+            Condition::Or(left, right) => {
+                let qry = left.bind_to_query_scalar(query);
+                right.bind_to_query_scalar(qry)
             }
         }
     }
@@ -401,6 +444,39 @@ impl Where {
     {
         if let Some(c) = &self.cond {
             return c.bind_to_query_as(query);
+        }
+        query
+    }
+
+    pub fn bind_to_query_scalar<'a, O, DB: Database>(
+        &self,
+        query: sqlx::query::QueryScalar<'a, DB, O, DB::Arguments<'a>>,
+    ) -> sqlx::query::QueryScalar<'a, DB, O, DB::Arguments<'a>>
+    where
+        // O: std::marker::Send,
+        // O: Unpin,
+        (O,): for<'r> FromRow<'r, DB::Row>,
+        Option<bool>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        bool: sqlx::Type<DB>,
+        Option<i16>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i16: sqlx::Type<DB>,
+        Option<i32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i32: sqlx::Type<DB>,
+        Option<i64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        i64: sqlx::Type<DB>,
+        Option<f64>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f64: sqlx::Type<DB>,
+        Option<f32>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        f32: sqlx::Type<DB>,
+        Option<NaiveDateTime>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        NaiveDateTime: sqlx::Type<DB>,
+        Option<String>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        String: sqlx::Type<DB>,
+        Option<Vec<u8>>: sqlx::Encode<'a, DB> + sqlx::Decode<'a, DB>,
+        Vec<u8>: sqlx::Type<DB>,
+    {
+        if let Some(c) = &self.cond {
+            return c.bind_to_query_scalar(query);
         }
         query
     }
