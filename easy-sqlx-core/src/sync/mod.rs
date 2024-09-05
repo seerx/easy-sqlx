@@ -23,6 +23,25 @@ pub mod table;
 
 pub async fn sync_tables<C, DB: Database>(
     conn: &mut C,
+    tables: Vec<TableSchema>
+) -> io::Result<()>
+// where
+//     for<'e> &'e mut T: Executor<'e, Database = Postgres>,
+where
+    for<'e> &'e mut C: Executor<'e, Database = DB>,
+    for<'a> DB::Arguments<'a>: IntoArguments<'a, DB>,
+    for<'a> &'a str: ColumnIndex<DB::Row>,
+    for<'a> bool: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+    for<'a> i32: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+    for<'a> i64: sqlx::Decode<'a, DB> + sqlx::Type<DB>,
+    for<'a> i64: Encode<'a, DB>,
+    for<'a> std::string::String: Decode<'a, DB> + Encode<'a, DB> + sqlx::Type<DB>,
+{
+    sync_tables_with_schema(conn, tables, "").await
+}
+
+pub async fn sync_tables_with_schema<C, DB: Database>(
+    conn: &mut C,
     tables: Vec<TableSchema>,
     default_schema: &str,
 ) -> io::Result<()>

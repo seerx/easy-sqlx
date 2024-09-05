@@ -79,7 +79,7 @@ col 属性,Option 包裹的列为 nullable ，否则为必填
 同步表结构，参数 connection 为数据库连接
 
 ```
-sync_tables(connection, vec![User::table()], None).await?;
+sync_tables(connection, vec![User::table()]).await?;
 ```
 
 ##### 添加记录 1

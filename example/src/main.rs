@@ -64,7 +64,7 @@ async fn main() {
     let mut conn = PgConnection::connect_with(&binding).await.unwrap(); // .expect_err("connect database error");
                                                                         // User::id_in(vec![1]);
                                                                         // User::cre
-    sync_tables(&mut conn, vec![User::table()], "")
+    sync_tables(&mut conn, vec![User::table()])
         .await
         .unwrap();
 
