@@ -1,5 +1,5 @@
 use condition::create_conditions;
-use delete::{create_delete, create_delete_builder};
+use delete::{create_delete, create_delete_builder, create_delete_by_id};
 use field::create_field_wrapper;
 use heck::ToSnakeCase;
 use insert::{create_insert, create_insert_builder};
@@ -163,6 +163,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let build_update = create_update_builder();
 
     let delete = create_delete(&table, &ident);
+    let delete_by_id = create_delete_by_id(&table, &ident, &struct_fields);
     let build_delete = create_delete_builder();
 
     let build_select = create_select_builder();
@@ -195,6 +196,7 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             #build_update
 
             #delete
+            #delete_by_id
             #build_delete
 
             #(#col_order_methods) *
