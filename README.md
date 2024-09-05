@@ -2,7 +2,9 @@
 
 #### 介绍
 
-根据结构体定义同步生成数据库表结构，简化增删改操作和大部分的单表查询操作，当前仅支持 postgres 数据库。
+根据结构体定义同步生成数据库表结构，简化增删改操作和大部分的单表查询操作，省去手写 sql 语句，省去 bind 参数。
+
+当前仅支持 postgres 数据库。
 
 #### 要求
 
@@ -135,6 +137,9 @@ let user = User {
 };
 // 根据主键 删除
 user.delete().execute(&mut conn).await.unwrap();
+
+// 根据主键 删除
+user.delete_by_id(2).execute(&mut conn).await.unwrap();
 ```
 
 ##### 删除 2
