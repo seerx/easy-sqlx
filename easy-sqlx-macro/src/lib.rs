@@ -83,6 +83,11 @@ pub fn derive_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                         if let Some(rust_type) = rust_type {
                             if let Some(syn_type) = syn_type {
                                 let field_name = &column.name;
+
+                                if column.pk && column.nullable {
+                                    panic!("pk field must not nullable, consider remove type Option<> or remove pk props of field: {field_name}");
+                                } 
+                                
                                 // 生成列方法名称
                                 let fn_name = syn::Ident::new(
                                     format!("col_{}", &field_name).as_str(),

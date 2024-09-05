@@ -15,10 +15,19 @@ pub fn create_delete(table: &TableSchema, entity: &Ident) -> proc_macro2::TokenS
                 format!("{}_eq", &col.name).as_str(),
                 proc_macro2::Span::call_site(),
             );
-            where_args.push(quote! {
-                // let #this = self;
-                builder = builder.and(#entity::#col_eq(self.#field_name.clone()));
-            });
+
+            if col.nullable {
+                // 该条件应该不会生效
+                where_args.push(quote! {
+                    if let Some(v) = self.#field_name.clone() {
+                        builder = builder.and(#entity::#col_eq(v));
+                    }
+                });
+            } else {
+                where_args.push(quote! {
+                    builder = builder.and(#entity::#col_eq(self.#field_name.clone()));
+                });
+            }
         }
     }
     quote! {

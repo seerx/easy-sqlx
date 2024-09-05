@@ -14,7 +14,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
                 // let #this = self;
                 builder = builder.set(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
-                    value: easy_sqlx_core::sql::utils::value::Value::from(self.#field_name),
+                    value: easy_sqlx_core::sql::utils::value::Value::from(self.#field_name.clone()),
                 });
             });
         } else {
@@ -22,7 +22,7 @@ pub fn create_insert(table: &TableSchema) -> proc_macro2::TokenStream {
                 // let #this = self;
                 builder = builder.set(easy_sqlx_core::sql::utils::pair::Pair {
                     name: #col_name.to_string(),
-                    value: easy_sqlx_core::sql::utils::value::Value::from(&self.#field_name),
+                    value: easy_sqlx_core::sql::utils::value::Value::from(&self.#field_name.clone()),
                 });
             });
         }

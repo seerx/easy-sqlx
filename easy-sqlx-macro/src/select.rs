@@ -25,13 +25,22 @@ pub fn create_select_by_id(
                 format!("{}_eq", &col.name).as_str(),
                 proc_macro2::Span::call_site(),
             );
-            
-            where_args.push(quote! {
-                builder = builder.and(#entity::#col_eq(#field_name));
-            });
+
+            if col.nullable {
+                // 该条件应该不会生效
+                where_args.push(quote! {
+                    if let Some(v) = self.#field_name.clone() {
+                        builder = builder.and(#entity::#col_eq(v));
+                    }
+                });
+            } else {
+                where_args.push(quote! {
+                    builder = builder.and(#entity::#col_eq(#field_name));
+                });
+            }
         }
     }
-    
+
     // let args: proc_macro2::TokenStream = id_args.iter().map(|arg| arg.clone()).collect();
     // let note = args.to_string();
     quote! {
